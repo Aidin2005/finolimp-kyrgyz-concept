@@ -33,7 +33,7 @@ def _load_current_data():
         return None
 
     try:
-        xl = pd.ExcelFile(report_path)
+        xl = pd.ExcelFile(report_path, engine="openpyxl")
         summary_df = pd.read_excel(xl, "Сводка по субагентам")
         disc_df = pd.read_excel(xl, "Детализация расхождений")
         anom_df = pd.read_excel(xl, "Аномалии и антифрод")
@@ -80,9 +80,28 @@ def _load_current_data():
 
 import time
 
+progress_state = {
+    "running": False,
+    "stage": 0,
+    "total_stages": 6,
+    "stage_name": "Готов к запуску",
+    "percent": 0
+}
+
+def update_progress(stage: int, name: str, percent: int):
+    progress_state["running"] = True
+    progress_state["stage"] = stage
+    progress_state["total_stages"] = 6
+    progress_state["stage_name"] = name
+    progress_state["percent"] = percent
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/api/progress")
+def get_progress():
+    return jsonify(progress_state)
 
 @app.route("/api/initial-data")
 @app.route("/api/current-status")
@@ -112,13 +131,26 @@ def run_reconciliation():
         data_dir = DEFAULT_DATA_DIR
 
     try:
-        # Run the full pipeline
+        update_progress(1, "Загрузка и очистка данных (1С, ETM, Реестр)...", 15)
         acts, etm, registry = step1_load_clean.run(data_dir)
+
+        update_progress(2, "Побилетное сопоставление и клиринг войдов...", 35)
         matched, discrepancies = step2_matching.run(acts, etm, registry)
+
+        update_progress(3, "Сведение баланса по 100 субагентам...", 55)
         reconciliation, discrepancies = step3_reconcile.run(acts, etm, matched, discrepancies)
+
+        update_progress(4, "Поиск финансовых аномалий и антифрод...", 70)
         anomalies = step4_anomalies.run(etm, registry, matched)
+
+        update_progress(5, "Генерация финансового отчета в Excel...", 85)
         step6_report.run(reconciliation, discrepancies, anomalies, DEFAULT_OUTPUT_DIR)
+
+        update_progress(6, "Обучение ML-модели (LightGBM) и скоринг рисков...", 95)
         step5_ml_model.run(etm, registry, matched, discrepancies, DEFAULT_OUTPUT_DIR)
+
+        update_progress(6, "Сверка завершена", 100)
+        progress_state["running"] = False
 
         data = _load_current_data()
         if data:
@@ -129,6 +161,8 @@ def run_reconciliation():
         else:
             return jsonify({"status": "error", "message": "Отчёт не был сформирован"}), 500
     except Exception as e:
+        progress_state["running"] = False
+        progress_state["stage_name"] = "Ошибка при сверке"
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         if temp_dir and temp_dir.exists():
