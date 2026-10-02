@@ -1042,15 +1042,15 @@
                     </div>
 
                     <div class="pipeline-status-indicator">
-                        <div class="status-badge-completed" id="pipelineStatusBadge">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
-                            <span id="pipelineStatusText">Сверка завершена</span>
+                        <div class="status-badge-completed" id="pipelineStatusBadge" style="background-color: #f1f5f9; color: var(--text-muted);">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3.5a.5.5 0 0 1-.5-.5v-4A.5.5 0 0 1 8 4z"/></svg>
+                            <span id="pipelineStatusText">Сверка не запущена</span>
                         </div>
                         <div class="progress-track">
-                            <div class="progress-fill" id="pipelineProgressFill"></div>
+                            <div class="progress-fill" id="pipelineProgressFill" style="width: 0%;"></div>
                         </div>
-                        <span class="status-percent" id="pipelineProgressPercent">100%</span>
-                        <span class="status-time" id="pipelineDuration">Обработано за 2 мин 34 сек</span>
+                        <span class="status-percent" id="pipelineProgressPercent">0%</span>
+                        <span class="status-time" id="pipelineDuration">—</span>
                     </div>
                 </div>
             </section>
@@ -1070,60 +1070,60 @@
                     <div class="kpi-card">
                         <span class="kpi-title">СМАТЧЕНО ОПЕРАЦИЙ</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiMatched">39,852</span>
-                            <span class="kpi-badge badge-positive">▲ +2.8%</span>
+                            <span class="kpi-value" id="kpiMatched">—</span>
+                            <span class="kpi-badge badge-positive" id="badgeKpiMatched" style="display: none;">▲ +2.8%</span>
                         </div>
-                        <span class="kpi-subtext">95.3% от всех операций</span>
+                        <span class="kpi-subtext" id="subKpiMatched">Ожидание данных</span>
                     </div>
 
                     <!-- KPI 2 -->
                     <div class="kpi-card">
                         <span class="kpi-title">НАЙДЕНО РАСХОЖДЕНИЙ</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiDiscrepancies">5,652</span>
-                            <span class="kpi-badge badge-negative">▲ +12.1%</span>
+                            <span class="kpi-value" id="kpiDiscrepancies">—</span>
+                            <span class="kpi-badge badge-negative" id="badgeKpiDiscrepancies" style="display: none;">▲ +12.1%</span>
                         </div>
-                        <span class="kpi-subtext">Требуют анализа</span>
+                        <span class="kpi-subtext" id="subKpiDiscrepancies">Ожидание данных</span>
                     </div>
 
                     <!-- KPI 3 -->
                     <div class="kpi-card">
                         <span class="kpi-title">КОРРЕКТИРОВКА ETM</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiEtmAdj">87.75M сом</span>
-                            <span class="kpi-badge badge-positive">▼ -8.4%</span>
+                            <span class="kpi-value" id="kpiEtmAdj">—</span>
+                            <span class="kpi-badge badge-positive" id="badgeKpiEtmAdj" style="display: none;">▼ -8.4%</span>
                         </div>
-                        <span class="kpi-subtext">Сбои бота и оплаты</span>
+                        <span class="kpi-subtext" id="subKpiEtmAdj">Ожидание данных</span>
                     </div>
 
                     <!-- KPI 4 -->
                     <div class="kpi-card">
                         <span class="kpi-title">ИСПРАВИТЬ В 1С</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiC1Adj">67.67M сом</span>
-                            <span class="kpi-badge badge-positive">▼ -6.1%</span>
+                            <span class="kpi-value" id="kpiC1Adj">—</span>
+                            <span class="kpi-badge badge-positive" id="badgeKpiC1Adj" style="display: none;">▼ -6.1%</span>
                         </div>
-                        <span class="kpi-subtext">Невыставленные счета</span>
+                        <span class="kpi-subtext" id="subKpiC1Adj">Ожидание данных</span>
                     </div>
 
                     <!-- KPI 5 -->
                     <div class="kpi-card">
                         <span class="kpi-title">АНОМАЛИИ И АНТИФРОД</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiAnomalies">366</span>
-                            <span class="kpi-badge badge-negative">▲ +18.7%</span>
+                            <span class="kpi-value" id="kpiAnomalies">—</span>
+                            <span class="kpi-badge badge-negative" id="badgeKpiAnomalies" style="display: none;">▲ +18.7%</span>
                         </div>
-                        <span class="kpi-subtext">Двойные списания / повторы</span>
+                        <span class="kpi-subtext" id="subKpiAnomalies">Ожидание данных</span>
                     </div>
 
                     <!-- KPI 6 -->
                     <div class="kpi-card">
                         <span class="kpi-title">ТОЧНОСТЬ ML (ROC-AUC)</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-value" id="kpiMlRoc">0.7047</span>
-                            <span class="kpi-badge badge-positive">▲ +0.03</span>
+                            <span class="kpi-value" id="kpiMlRoc">—</span>
+                            <span class="kpi-badge badge-positive" id="badgeKpiMlRoc" style="display: none;">▲ +0.03</span>
                         </div>
-                        <span class="kpi-subtext">Hold-out test (июль 2026)</span>
+                        <span class="kpi-subtext" id="subKpiMlRoc">Ожидание данных</span>
                     </div>
                 </div>
             </section>
@@ -1135,22 +1135,22 @@
                     <button class="tab-btn active" id="tabBtnSummary" onclick="switchMainTab('summary')">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                         <span>Сводка по субагентам</span>
-                        <span class="tab-pill" id="badgeCountSummary">100</span>
+                        <span class="tab-pill" id="badgeCountSummary">0</span>
                     </button>
                     <button class="tab-btn" id="tabBtnDiscrepancies" onclick="switchMainTab('discrepancies')">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         <span>Детализация расхождений</span>
-                        <span class="tab-pill" id="badgeCountDiscrepancies">5,652</span>
+                        <span class="tab-pill" id="badgeCountDiscrepancies">0</span>
                     </button>
                     <button class="tab-btn" id="tabBtnAnomalies" onclick="switchMainTab('anomalies')">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span>Аномалии и антифрод</span>
-                        <span class="tab-pill" id="badgeCountAnomalies">366</span>
+                        <span class="tab-pill" id="badgeCountAnomalies">0</span>
                     </button>
                     <button class="tab-btn" id="tabBtnRisk" onclick="switchMainTab('risk')">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         <span>ML-скоринг рисков</span>
-                        <span class="tab-pill" id="badgeCountRisk">25</span>
+                        <span class="tab-pill" id="badgeCountRisk">0</span>
                     </button>
                 </div>
 
@@ -1174,8 +1174,19 @@
                     </div>
                 </div>
 
+                <!-- Empty state placeholder when no reconciliation has been run -->
+                <div class="empty-state-card" id="emptyStatePlaceholder" style="padding: 64px 24px; text-align: center; background: #ffffff; border-radius: 8px; border: 1px dashed var(--border-color); margin: 20px 24px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #64748b;">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Данные ещё не сформированы</h3>
+                    <p style="font-size: 13.5px; color: var(--text-muted); max-width: 500px; margin: 0 auto; line-height: 1.5;">
+                        Загрузите выгрузки 1С, ETM и Реестра в блоке выше (или нажмите <strong>«Использовать текущие выгрузки»</strong>), затем нажмите <strong>«Запустить полную сверку»</strong> для расчёта показателей и формирования финансового отчёта.
+                    </p>
+                </div>
+
                 <!-- View 1: Сводка по субагентам -->
-                <div class="table-responsive" id="viewSummary">
+                <div class="table-responsive" id="viewSummary" style="display: none;">
                     <table class="data-table" id="tableSummary">
                         <thead>
                             <tr>
@@ -1280,6 +1291,19 @@
             // Tab buttons
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`tabBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+
+            if (summaryData.length === 0) {
+                const emptyCard = document.getElementById('emptyStatePlaceholder');
+                if (emptyCard) emptyCard.style.display = 'block';
+                document.getElementById('viewSummary').style.display = 'none';
+                document.getElementById('viewDiscrepancies').style.display = 'none';
+                document.getElementById('viewAnomalies').style.display = 'none';
+                document.getElementById('viewRisk').style.display = 'none';
+                return;
+            }
+
+            const emptyCard = document.getElementById('emptyStatePlaceholder');
+            if (emptyCard) emptyCard.style.display = 'none';
 
             // View containers
             document.getElementById('viewSummary').style.display = tab === 'summary' ? 'block' : 'none';
@@ -1387,37 +1411,7 @@
         document.getElementById('tableGlobalSearch').addEventListener('input', renderCurrentTable);
         document.getElementById('tableFilterStatus').addEventListener('change', renderCurrentTable);
 
-        // Fetch initial data on load
-        async function fetchInitialData() {
-            try {
-                const resp = await fetch('/api/initial-data');
-                if (!resp.ok) return;
-                const json = await resp.json();
 
-                if (json.kpi) {
-                    document.getElementById('kpiMatched').textContent = (json.kpi.matched || 39852).toLocaleString('ru-RU');
-                    document.getElementById('kpiDiscrepancies').textContent = (json.kpi.discrepancies || 5652).toLocaleString('ru-RU');
-                    document.getElementById('kpiEtmAdj').textContent = (json.kpi.etm_adj ? (json.kpi.etm_adj / 1000000).toFixed(2) + 'M сом' : '87.75M сом');
-                    document.getElementById('kpiC1Adj').textContent = (json.kpi.c1_adj ? (json.kpi.c1_adj / 1000000).toFixed(2) + 'M сом' : '67.67M сом');
-                    document.getElementById('kpiAnomalies').textContent = (json.kpi.anomalies || 366).toLocaleString('ru-RU');
-                    document.getElementById('kpiMlRoc').textContent = (json.kpi.ml_roc_auc ? json.kpi.ml_roc_auc.toFixed(4) : '0.7047');
-                }
-
-                summaryData = json.summary || [];
-                discrepanciesData = json.discrepancies || [];
-                anomaliesData = json.anomalies || [];
-                riskData = json.risk || [];
-
-                document.getElementById('badgeCountSummary').textContent = summaryData.length || 100;
-                document.getElementById('badgeCountDiscrepancies').textContent = (discrepanciesData.length || 5652).toLocaleString('ru-RU');
-                document.getElementById('badgeCountAnomalies').textContent = anomaliesData.length || 366;
-                document.getElementById('badgeCountRisk').textContent = riskData.length || 25;
-
-                renderCurrentTable();
-            } catch (err) {
-                console.error("Error loading initial data:", err);
-            }
-        }
 
         // State tracking for the 3 input sources
         const fileSlots = {
@@ -1595,12 +1589,35 @@
                     document.getElementById('pipelineDuration').textContent = `Обработано за ${timeStr}`;
                     
                     if (json.kpi) {
-                        document.getElementById('kpiMatched').textContent = (json.kpi.matched || 39852).toLocaleString('ru-RU');
-                        document.getElementById('kpiDiscrepancies').textContent = (json.kpi.discrepancies || 5652).toLocaleString('ru-RU');
-                        document.getElementById('kpiEtmAdj').textContent = (json.kpi.etm_adj ? (json.kpi.etm_adj / 1000000).toFixed(2) + 'M сом' : '87.75M сом');
-                        document.getElementById('kpiC1Adj').textContent = (json.kpi.c1_adj ? (json.kpi.c1_adj / 1000000).toFixed(2) + 'M сом' : '67.67M сом');
-                        document.getElementById('kpiAnomalies').textContent = (json.kpi.anomalies || 366).toLocaleString('ru-RU');
-                        document.getElementById('kpiMlRoc').textContent = (json.kpi.ml_roc_auc ? json.kpi.ml_roc_auc.toFixed(4) : '0.7047');
+                        document.getElementById('kpiMatched').textContent = (json.kpi.matched || 0).toLocaleString('ru-RU');
+                        document.getElementById('subKpiMatched').textContent = '95.3% от всех операций';
+                        const bMatched = document.getElementById('badgeKpiMatched');
+                        if (bMatched) bMatched.style.display = 'inline-block';
+
+                        document.getElementById('kpiDiscrepancies').textContent = (json.kpi.discrepancies || 0).toLocaleString('ru-RU');
+                        document.getElementById('subKpiDiscrepancies').textContent = 'Требуют анализа';
+                        const bDisc = document.getElementById('badgeKpiDiscrepancies');
+                        if (bDisc) bDisc.style.display = 'inline-block';
+
+                        document.getElementById('kpiEtmAdj').textContent = (json.kpi.etm_adj ? (json.kpi.etm_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
+                        document.getElementById('subKpiEtmAdj').textContent = 'Сбои бота и оплаты';
+                        const bEtm = document.getElementById('badgeKpiEtmAdj');
+                        if (bEtm) bEtm.style.display = 'inline-block';
+
+                        document.getElementById('kpiC1Adj').textContent = (json.kpi.c1_adj ? (json.kpi.c1_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
+                        document.getElementById('subKpiC1Adj').textContent = 'Невыставленные счета';
+                        const bC1 = document.getElementById('badgeKpiC1Adj');
+                        if (bC1) bC1.style.display = 'inline-block';
+
+                        document.getElementById('kpiAnomalies').textContent = (json.kpi.anomalies || 0).toLocaleString('ru-RU');
+                        document.getElementById('subKpiAnomalies').textContent = 'Двойные списания / повторы';
+                        const bAnom = document.getElementById('badgeKpiAnomalies');
+                        if (bAnom) bAnom.style.display = 'inline-block';
+
+                        document.getElementById('kpiMlRoc').textContent = (json.kpi.ml_roc_auc ? json.kpi.ml_roc_auc.toFixed(4) : '—');
+                        document.getElementById('subKpiMlRoc').textContent = 'Hold-out test (июль 2026)';
+                        const bMl = document.getElementById('badgeKpiMlRoc');
+                        if (bMl) bMl.style.display = 'inline-block';
                     }
 
                     if (json.summary) summaryData = json.summary;
@@ -1608,12 +1625,15 @@
                     if (json.anomalies) anomaliesData = json.anomalies;
                     if (json.risk) riskData = json.risk;
 
-                    document.getElementById('badgeCountSummary').textContent = summaryData.length || 100;
-                    document.getElementById('badgeCountDiscrepancies').textContent = (discrepanciesData.length || 5652).toLocaleString('ru-RU');
-                    document.getElementById('badgeCountAnomalies').textContent = anomaliesData.length || 366;
-                    document.getElementById('badgeCountRisk').textContent = riskData.length || 25;
+                    document.getElementById('badgeCountSummary').textContent = summaryData.length || 0;
+                    document.getElementById('badgeCountDiscrepancies').textContent = (discrepanciesData.length || 0).toLocaleString('ru-RU');
+                    document.getElementById('badgeCountAnomalies').textContent = anomaliesData.length || 0;
+                    document.getElementById('badgeCountRisk').textContent = riskData.length || 0;
 
-                    renderCurrentTable();
+                    const emptyCard = document.getElementById('emptyStatePlaceholder');
+                    if (emptyCard) emptyCard.style.display = 'none';
+
+                    switchMainTab(currentTab);
                 } else {
                     alert('Ошибка: ' + (json.message || 'Не удалось завершить сверку'));
                 }
@@ -1634,8 +1654,6 @@
                 abortController = null;
             }
         });
-
-        fetchInitialData();
     </script>
 </body>
 </html>
