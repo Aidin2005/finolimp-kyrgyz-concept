@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  reconciliation-web:
+    build: .
+    container_name: finolimp_reconciliation
+    restart: always
+    ports:
+      - "5050:5050"
+    environment:
+      - PORT=5050
+    volumes:
+      - ./output:/app/output

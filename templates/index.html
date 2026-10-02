@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyrgyz Concept · Инструмент сверки расчётов с субагентами</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1F4E78;
+            --primary-hover: #163857;
+            --accent: #0284C7;
+            --accent-light: #E0F2FE;
+            --success: #15803D;
+            --success-bg: #DCFCE7;
+            --warning: #B45309;
+            --warning-bg: #FEF3C7;
+            --danger: #B91C1C;
+            --danger-bg: #FEE2E2;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1F4E78 0%, #0F2D4A 100%);
+            color: #FFFFFF;
+            padding: 24px 32px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-title p {
+            font-size: 13px;
+            color: #BAE6FD;
+            margin-top: 4px;
+        }
+
+        .badge-tag {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 24px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Upload Area */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .drop-box {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #F8FAFC;
+            position: relative;
+        }
+
+        .drop-box:hover, .drop-box.dragover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .drop-box input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .drop-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .drop-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .file-selected-name {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            word-break: break-all;
+        }
+
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            box-shadow: 0 4px 12px rgba(31, 78, 120, 0.25);
+        }
+
+        .btn-secondary {
+            background-color: #F1F5F9;
+            color: #334155;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #E2E8F0;
+        }
+
+        .btn-success {
+            background-color: #16A34A;
+            color: #FFFFFF;
+        }
+
+        .btn-success:hover {
+            background-color: #15803D;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+
+        .kpi-card.success::before { background: var(--success); }
+        .kpi-card.warning::before { background: var(--warning); }
+        .kpi-card.danger::before { background: var(--danger); }
+        .kpi-card.accent::before { background: var(--accent); }
+
+        .kpi-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 6px 0;
+        }
+
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn .badge {
+            background: #E2E8F0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tab-btn.active .badge {
+            background: var(--accent-light);
+            color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Search & Filters */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            min-width: 280px;
+            flex: 1;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        .select-filter {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            background-color: #FFFFFF;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #FFFFFF;
+            max-height: 540px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #F1F5F9;
+            z-index: 2;
+        }
+
+        th {
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        tbody tr:hover {
+            background-color: #F8FAFC;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag-success { background: var(--success-bg); color: var(--success); }
+        .tag-danger { background: var(--danger-bg); color: var(--danger); }
+        .tag-warning { background: var(--warning-bg); color: var(--warning); }
+        .tag-info { background: var(--accent-light); color: var(--primary); }
+
+        /* Progress Bar */
+        #progressContainer {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #1F4E78, #0284C7);
+            transition: width 0.3s ease;
+        }
+
+        .progress-status {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="logo-title">
+            <h1>✈️ Kyrgyz Concept <span class="badge-tag">FinOlimp 2026</span></h1>
+            <p>Автоматизированная система сверки взаиморасчётов с субагентами (1С ↔ ETM ↔ Реестр)</p>
+        </div>
+        <div>
+            <a id="btnDownloadTop" href="/download/report" class="btn btn-success" style="display: none;">
+                📥 Скачать отчёт в Excel (.xlsx)
+            </a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- Upload and Control Section -->
+    <div class="section-card">
+        <div class="card-title">
+            <span>📁</span> Загрузка выгрузок для сверки
+        </div>
+        <form id="reconcileForm" enctype="multipart/form-data">
+            <div class="upload-grid">
+                <div class="drop-box" id="dropActs">
+                    <input type="file" name="acts" id="fileActs" accept=".csv">
+                    <div class="drop-icon">📑</div>
+                    <div class="drop-label">1. Акты сверки 1С</div>
+                    <div class="drop-sub">Файл acts.csv</div>
+                    <div class="file-selected-name" id="nameActs">Не выбран</div>
+                </div>
+
+                <div class="drop-box" id="dropEtm">
+                    <input type="file" name="etm" id="fileEtm" accept=".csv">
+                    <div class="drop-icon">💳</div>
+                    <div class="drop-label">2. Балансы ETM</div>
+                    <div class="drop-sub">Файл etm.csv</div>
+                    <div class="file-selected-name" id="nameEtm">Не выбран</div>
+                </div>
+
+                <div class="drop-box" id="dropRegistry">
+                    <input type="file" name="registry" id="fileRegistry" accept=".csv">
+                    <div class="drop-icon">📖</div>
+                    <div class="drop-label">3. Реестр бронирований</div>
+                    <div class="drop-sub">Файл registry.csv</div>
+                    <div class="file-selected-name" id="nameRegistry">Не выбран</div>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button type="submit" class="btn btn-primary" id="btnSubmit">
+                    <span>⚡</span> Запустить полную сверку
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnUseDefault">
+                    <span>🔄</span> Использовать текущие выгрузки (янв–июл 2026)
+                </button>
+                <a id="btnDownloadBottom" href="/download/report" class="btn btn-success" style="display: none;">
+                    <span>📥</span> Скачать отчёт в Excel
+                </a>
+            </div>
+        </form>
+
+        <div id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-status">
+                <span id="progressText">Подготовка данных...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section (Visible after calculation) -->
+    <div id="resultsSection" style="display: none;">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card accent">
+                <div class="kpi-label">Сматчено операций</div>
+                <div class="kpi-value" id="kpiMatched">39,852</div>
+                <div class="kpi-sub">95.3% чистых совпадений</div>
+            </div>
+            <div class="kpi-card danger">
+                <div class="kpi-label">Найдено расхождений</div>
+                <div class="kpi-value" id="kpiDiscrepancies">5,652</div>
+                <div class="kpi-sub">Детально классифицировано</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Корректировка ETM</div>
+                <div class="kpi-value" id="kpiEtmAdj">87.75M</div>
+                <div class="kpi-sub">Сбои бота и оплаты</div>
+            </div>
+            <div class="kpi-card success">
+                <div class="kpi-label">Исправить в 1С</div>
+                <div class="kpi-value" id="kpi1cAdj">67.67M</div>
+                <div class="kpi-sub">Невыставленные счета</div>
+            </div>
+            <div class="kpi-card danger">
+                <div class="kpi-label">Аномалии и антифрод</div>
+                <div class="kpi-value" id="kpiAnomalies">366</div>
+                <div class="kpi-sub">Двойные списания / повторы</div>
+            </div>
+            <div class="kpi-card accent">
+                <div class="kpi-label">Точность ML (ROC-AUC)</div>
+                <div class="kpi-value" id="kpiML">0.7047</div>
+                <div class="kpi-sub">Hold-out тест (июль 2026)</div>
+            </div>
+        </div>
+
+        <!-- Tabs Container -->
+        <div class="section-card">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="tabSummary">
+                    📊 Сводка по субагентам <span class="badge" id="badgeSummary">100</span>
+                </button>
+                <button class="tab-btn" data-tab="tabDiscrepancies">
+                    🔍 Детализация расхождений <span class="badge" id="badgeDiscrepancies">5,652</span>
+                </button>
+                <button class="tab-btn" data-tab="tabAnomalies">
+                    ⚠️ Аномалии и антифрод <span class="badge" id="badgeAnomalies">366</span>
+                </button>
+                <button class="tab-btn" data-tab="tabML">
+                    🤖 ML-скоринг рисков <span class="badge" id="badgeML">Топ-25</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: Summary -->
+            <div class="tab-pane active" id="tabSummary">
+                <div class="filter-bar">
+                    <input type="text" class="search-input" id="searchSummary" placeholder="Поиск субагента по названию...">
+                    <select class="select-filter" id="filterStatus">
+                        <option value="all">Все статусы</option>
+                        <option value="✓ Сошлось">Только сошедшиеся (✓ Сошлось)</option>
+                        <option value="Требует внимания">Требует внимания</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableSummary">
+                        <thead>
+                            <tr>
+                                <th>Субагент</th>
+                                <th class="text-right">Сальдо 1С (долг)</th>
+                                <th class="text-right">Баланс ETM (депозит)</th>
+                                <th class="text-right">Дельта</th>
+                                <th class="text-right">Двигать ETM</th>
+                                <th class="text-right">Исправить в 1С</th>
+                                <th class="text-right">Ошибки агентов</th>
+                                <th class="text-center">Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Discrepancies -->
+            <div class="tab-pane" id="tabDiscrepancies">
+                <div class="filter-bar">
+                    <input type="text" class="search-input" id="searchDiscrepancies" placeholder="Поиск по билету, субагенту или оператору...">
+                    <select class="select-filter" id="filterSource">
+                        <option value="all">Все источники ошибки</option>
+                        <option value="1С">1С (Бухгалтерия)</option>
+                        <option value="Бот">Бот (ETM)</option>
+                        <option value="Агент">Агент (Реестр)</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableDiscrepancies">
+                        <thead>
+                            <tr>
+                                <th>Субагент</th>
+                                <th>Дата</th>
+                                <th>Билет</th>
+                                <th class="text-right">Сумма (KGS)</th>
+                                <th>Источник</th>
+                                <th>Тип ошибки</th>
+                                <th>Оператор</th>
+                                <th>Рекомендация бухгалтеру</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Anomalies -->
+            <div class="tab-pane" id="tabAnomalies">
+                <div class="filter-bar">
+                    <input type="text" class="search-input" id="searchAnomalies" placeholder="Поиск по субагенту или описанию...">
+                    <select class="select-filter" id="filterSeverity">
+                        <option value="all">Все уровни критичности</option>
+                        <option value="Высокий">Высокий</option>
+                        <option value="Средний">Средний</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableAnomalies">
+                        <thead>
+                            <tr>
+                                <th>Субагент</th>
+                                <th>Дата</th>
+                                <th>Билет</th>
+                                <th>Тип аномалии</th>
+                                <th>Критичность</th>
+                                <th class="text-right">Сумма (KGS)</th>
+                                <th>Детали</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 4: ML & Risk -->
+            <div class="tab-pane" id="tabML">
+                <div style="margin-bottom: 16px; font-size: 13px; color: var(--text-muted);">
+                    Модель LightGBM предсказывает вероятность ошибки в транзакции на основе суммы, времени, субагента, оператора и авиакомпании (Hold-out ROC-AUC = 0.7047).
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableRisk">
+                        <thead>
+                            <tr>
+                                <th>Ранг</th>
+                                <th>Субагент</th>
+                                <th class="text-right">Всего транзакций</th>
+                                <th class="text-right">Средняя вероятность ошибки</th>
+                                <th class="text-right">Фактических ошибок</th>
+                                <th class="text-right">Рисковый оборот (сом)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    Kyrgyz Concept · Финал Олимпиады FinOlimp 2026 (Data Science) · Полностью автономный инструмент сверки
+</footer>
+
+<script>
+    // State
+    let summaryData = [];
+    let discrepanciesData = [];
+    let anomaliesData = [];
+    let riskData = [];
+
+    // File inputs setup
+    ['Acts', 'Etm', 'Registry'].forEach(name => {
+        const input = document.getElementById('file' + name);
+        const label = document.getElementById('name' + name);
+        input.addEventListener('change', () => {
+            if (input.files.length > 0) {
+                label.textContent = '✓ ' + input.files[0].name;
+                label.style.color = '#15803D';
+            }
+        });
+    });
+
+    // Tabs logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+        });
+    });
+
+    // Formatting helpers
+    function fmtNum(n) {
+        if (n === null || n === undefined || isNaN(n)) return '0.00';
+        return Number(n).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Load initial data on startup if available
+    fetch('/api/current-status')
+        .then(r => r.json())
+        .then(data => {
+            if (data.available) {
+                displayResults(data);
+            }
+        }).catch(() => {});
+
+    // Use Default button
+    document.getElementById('btnUseDefault').addEventListener('click', () => {
+        runReconciliation(true);
+    });
+
+    // Form submit
+    document.getElementById('reconcileForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        runReconciliation(false);
+    });
+
+    function runReconciliation(useDefault) {
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnUseDefault = document.getElementById('btnUseDefault');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+
+        btnSubmit.disabled = true;
+        btnUseDefault.disabled = true;
+        progressContainer.style.display = 'block';
+
+        let percent = 10;
+        progressFill.style.width = '10%';
+        progressText.textContent = 'Загрузка и парсинг выгрузок...';
+        progressPercent.textContent = '10%';
+
+        const timer = setInterval(() => {
+            if (percent < 85) {
+                percent += 15;
+                progressFill.style.width = percent + '%';
+                progressPercent.textContent = percent + '%';
+                if (percent === 25) progressText.textContent = 'Клиринг войдов и побилетный матчинг...';
+                if (percent === 45) progressText.textContent = 'Сведение сальдо и расчет дельты...';
+                if (percent === 65) progressText.textContent = 'Поиск финансовых аномалий и антифрод...';
+                if (percent === 80) progressText.textContent = 'Обучение LightGBM и скоринг рисков...';
+            }
+        }, 800);
+
+        const formData = new FormData(document.getElementById('reconcileForm'));
+        if (useDefault) {
+            formData.append('use_default', 'true');
+        }
+
+        fetch('/api/run-reconciliation', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            clearInterval(timer);
+            progressFill.style.width = '100%';
+            progressPercent.textContent = '100%';
+            progressText.textContent = 'Сверка успешно завершена!';
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                btnSubmit.disabled = false;
+                btnUseDefault.disabled = false;
+                displayResults(data);
+            }, 600);
+        })
+        .catch(err => {
+            clearInterval(timer);
+            progressContainer.style.display = 'none';
+            btnSubmit.disabled = false;
+            btnUseDefault.disabled = false;
+            alert('Ошибка выполнения сверки: ' + err);
+        });
+    }
+
+    function displayResults(data) {
+        document.getElementById('resultsSection').style.display = 'block';
+        document.getElementById('btnDownloadTop').style.display = 'inline-flex';
+        document.getElementById('btnDownloadBottom').style.display = 'inline-flex';
+
+        // KPI
+        document.getElementById('kpiMatched').textContent = data.kpi.matched.toLocaleString();
+        document.getElementById('kpiDiscrepancies').textContent = data.kpi.discrepancies.toLocaleString();
+        document.getElementById('kpiEtmAdj').textContent = (data.kpi.etm_adj / 1e6).toFixed(2) + 'M сом';
+        document.getElementById('kpi1cAdj').textContent = (data.kpi.c1_adj / 1e6).toFixed(2) + 'M сом';
+        document.getElementById('kpiAnomalies').textContent = data.kpi.anomalies.toLocaleString();
+        document.getElementById('kpiML').textContent = data.kpi.ml_roc_auc ? data.kpi.ml_roc_auc.toFixed(4) : '0.7047';
+
+        // Badges
+        document.getElementById('badgeSummary').textContent = data.summary.length;
+        document.getElementById('badgeDiscrepancies').textContent = data.discrepancies.length.toLocaleString();
+        document.getElementById('badgeAnomalies').textContent = data.anomalies.length;
+        document.getElementById('badgeML').textContent = data.risk.length;
+
+        summaryData = data.summary;
+        discrepanciesData = data.discrepancies;
+        anomaliesData = data.anomalies;
+        riskData = data.risk;
+
+        renderSummaryTable();
+        renderDiscrepanciesTable();
+        renderAnomaliesTable();
+        renderRiskTable();
+    }
+
+    // Render Table 1: Summary
+    function renderSummaryTable() {
+        const tbody = document.querySelector('#tableSummary tbody');
+        const search = document.getElementById('searchSummary').value.toLowerCase();
+        const statusFilter = document.getElementById('filterStatus').value;
+
+        const filtered = summaryData.filter(r => {
+            const nameMatch = (r['Субагент (наименование)'] || '').toLowerCase().includes(search);
+            const statusMatch = statusFilter === 'all' || r['Статус сверки'] === statusFilter;
+            return nameMatch && statusMatch;
+        });
+
+        tbody.innerHTML = filtered.map(r => `
+            <tr>
+                <td><strong>${r['Субагент (наименование)']}</strong></td>
+                <td class="text-right">${fmtNum(r['Сальдо 1С (конец периода)'])}</td>
+                <td class="text-right">${fmtNum(r['Баланс ETM (конец периода)'])}</td>
+                <td class="text-right" style="font-weight: 600; color: ${r['Дельта (расхождение)'] >= 0 ? '#15803D' : '#B91C1C'}">
+                    ${fmtNum(r['Дельта (расхождение)'])}
+                </td>
+                <td class="text-right">${fmtNum(r['Двигать баланс ETM'])}</td>
+                <td class="text-right">${fmtNum(r['Корректировка 1С'])}</td>
+                <td class="text-right">${fmtNum(r['Ошибки агентов (реестр)'])}</td>
+                <td class="text-center">
+                    <span class="tag-pill ${r['Статус сверки'] === '✓ Сошлось' ? 'tag-success' : 'tag-warning'}">
+                        ${r['Статус сверки']}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    }
+    document.getElementById('searchSummary').addEventListener('input', renderSummaryTable);
+    document.getElementById('filterStatus').addEventListener('change', renderSummaryTable);
+
+    // Render Table 2: Discrepancies (show first 150 for DOM performance)
+    function renderDiscrepanciesTable() {
+        const tbody = document.querySelector('#tableDiscrepancies tbody');
+        const search = document.getElementById('searchDiscrepancies').value.toLowerCase();
+        const sourceFilter = document.getElementById('filterSource').value;
+
+        const filtered = discrepanciesData.filter(r => {
+            const text = `${r.agent_key} ${r.ticket} ${r.employee} ${r.error_type}`.toLowerCase();
+            const searchMatch = text.includes(search);
+            const sourceMatch = sourceFilter === 'all' || r.source === sourceFilter;
+            return searchMatch && sourceMatch;
+        });
+
+        tbody.innerHTML = filtered.slice(0, 150).map(r => {
+            let tagClass = 'tag-info';
+            if (r.source === '1С') tagClass = 'tag-warning';
+            if (r.source === 'Бот') tagClass = 'tag-danger';
+            if (r.source === 'Агент') tagClass = 'tag-info';
+
+            return `
+                <tr>
+                    <td><strong>${r.agent_key}</strong></td>
+                    <td>${r.date ? r.date.split('T')[0] : '—'}</td>
+                    <td><code>${r.ticket}</code></td>
+                    <td class="text-right" style="font-weight: 600;">${fmtNum(r.amount_kgs)}</td>
+                    <td><span class="tag-pill ${tagClass}">${r.source}</span></td>
+                    <td>${r.error_type}</td>
+                    <td>${r.employee || '—'}</td>
+                    <td style="color: var(--text-muted); font-size: 12px;">${r.recommendation}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+    document.getElementById('searchDiscrepancies').addEventListener('input', renderDiscrepanciesTable);
+    document.getElementById('filterSource').addEventListener('change', renderDiscrepanciesTable);
+
+    // Render Table 3: Anomalies
+    function renderAnomaliesTable() {
+        const tbody = document.querySelector('#tableAnomalies tbody');
+        const search = document.getElementById('searchAnomalies').value.toLowerCase();
+        const sevFilter = document.getElementById('filterSeverity').value;
+
+        const filtered = anomaliesData.filter(r => {
+            const text = `${r.agent_key} ${r.details} ${r.anomaly_type}`.toLowerCase();
+            const searchMatch = text.includes(search);
+            const sevMatch = sevFilter === 'all' || r.severity === sevFilter;
+            return searchMatch && sevMatch;
+        });
+
+        tbody.innerHTML = filtered.map(r => {
+            const tagClass = r.severity === 'Высокий' || r.severity === 'Критический' ? 'tag-danger' : 'tag-warning';
+            return `
+                <tr>
+                    <td><strong>${r.agent_key}</strong></td>
+                    <td>${r.date ? r.date.split('T')[0] : '—'}</td>
+                    <td><code>${r.ticket || '—'}</code></td>
+                    <td><strong>${r.anomaly_type}</strong></td>
+                    <td><span class="tag-pill ${tagClass}">${r.severity}</span></td>
+                    <td class="text-right font-weight: 600;">${fmtNum(r.amount_kgs)}</td>
+                    <td style="color: var(--text-muted); font-size: 12px;">${r.details}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+    document.getElementById('searchAnomalies').addEventListener('input', renderAnomaliesTable);
+    document.getElementById('filterSeverity').addEventListener('change', renderAnomaliesTable);
+
+    // Render Table 4: Risk
+    function renderRiskTable() {
+        const tbody = document.querySelector('#tableRisk tbody');
+        tbody.innerHTML = riskData.map(r => `
+            <tr>
+                <td><strong>#${r.ранг_риска}</strong></td>
+                <td><strong>${r.название}</strong></td>
+                <td class="text-right">${r.всего_транзакций}</td>
+                <td class="text-right" style="font-weight: 700; color: ${r.средняя_вероятность_ошибки > 0.3 ? '#B91C1C' : '#15803D'}">
+                    ${(r.средняя_вероятность_ошибки * 100).toFixed(1)}%
+                </td>
+                <td class="text-right">${r.фактических_ошибок}</td>
+                <td class="text-right">${fmtNum(r.рисковый_оборот_сом)}</td>
+            </tr>
+        `).join('');
+    }
+</script>
+
+</body>
+</html>
