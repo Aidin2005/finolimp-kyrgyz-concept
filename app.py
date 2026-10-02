@@ -59,8 +59,13 @@ def _load_current_data():
             for col in df.select_dtypes(include=["datetime", "datetimetz"]).columns:
                 df[col] = df[col].astype(str)
 
+        import datetime
+        mtime = report_path.stat().st_mtime
+        last_updated = datetime.datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M")
+
         return {
             "available": True,
+            "last_updated": last_updated,
             "kpi": {
                 "matched": 39852,
                 "discrepancies": len(disc_df),

@@ -919,10 +919,10 @@
 
             <div class="topbar-right">
                 <div class="last-sync-badge">
-                    <span>Последняя сверка 15 июля 2026, 12:24</span>
+                    <span id="topbarLastSync">Сверка актуальна</span>
                     <span>•</span>
                     <span class="status-dot"></span>
-                    <span style="color: var(--text-dark); font-weight: 500;">Завершена</span>
+                    <span style="color: var(--text-dark); font-weight: 500;">Готово к работе</span>
                 </div>
 
                 <a href="/download/report" class="btn-download-excel">
@@ -1581,59 +1581,7 @@
                 const json = await resp.json();
                 
                 if (json.status === 'ok' || json.kpi || json.summary) {
-                    statusText.textContent = 'Сверка завершена';
-                    document.getElementById('pipelineStatusBadge').style.color = 'var(--success-text)';
-                    document.getElementById('pipelineProgressPercent').textContent = '100%';
-                    document.getElementById('pipelineProgressFill').style.width = '100%';
-                    const timeStr = json.elapsed_sec ? `${Math.floor(json.elapsed_sec / 60)} мин ${Math.round(json.elapsed_sec % 60)} сек` : '2 мин 34 сек';
-                    document.getElementById('pipelineDuration').textContent = `Обработано за ${timeStr}`;
-                    
-                    if (json.kpi) {
-                        document.getElementById('kpiMatched').textContent = (json.kpi.matched || 0).toLocaleString('ru-RU');
-                        document.getElementById('subKpiMatched').textContent = '95.3% от всех операций';
-                        const bMatched = document.getElementById('badgeKpiMatched');
-                        if (bMatched) bMatched.style.display = 'inline-block';
-
-                        document.getElementById('kpiDiscrepancies').textContent = (json.kpi.discrepancies || 0).toLocaleString('ru-RU');
-                        document.getElementById('subKpiDiscrepancies').textContent = 'Требуют анализа';
-                        const bDisc = document.getElementById('badgeKpiDiscrepancies');
-                        if (bDisc) bDisc.style.display = 'inline-block';
-
-                        document.getElementById('kpiEtmAdj').textContent = (json.kpi.etm_adj ? (json.kpi.etm_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
-                        document.getElementById('subKpiEtmAdj').textContent = 'Сбои бота и оплаты';
-                        const bEtm = document.getElementById('badgeKpiEtmAdj');
-                        if (bEtm) bEtm.style.display = 'inline-block';
-
-                        document.getElementById('kpiC1Adj').textContent = (json.kpi.c1_adj ? (json.kpi.c1_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
-                        document.getElementById('subKpiC1Adj').textContent = 'Невыставленные счета';
-                        const bC1 = document.getElementById('badgeKpiC1Adj');
-                        if (bC1) bC1.style.display = 'inline-block';
-
-                        document.getElementById('kpiAnomalies').textContent = (json.kpi.anomalies || 0).toLocaleString('ru-RU');
-                        document.getElementById('subKpiAnomalies').textContent = 'Двойные списания / повторы';
-                        const bAnom = document.getElementById('badgeKpiAnomalies');
-                        if (bAnom) bAnom.style.display = 'inline-block';
-
-                        document.getElementById('kpiMlRoc').textContent = (json.kpi.ml_roc_auc ? json.kpi.ml_roc_auc.toFixed(4) : '—');
-                        document.getElementById('subKpiMlRoc').textContent = 'Hold-out test (июль 2026)';
-                        const bMl = document.getElementById('badgeKpiMlRoc');
-                        if (bMl) bMl.style.display = 'inline-block';
-                    }
-
-                    if (json.summary) summaryData = json.summary;
-                    if (json.discrepancies) discrepanciesData = json.discrepancies;
-                    if (json.anomalies) anomaliesData = json.anomalies;
-                    if (json.risk) riskData = json.risk;
-
-                    document.getElementById('badgeCountSummary').textContent = summaryData.length || 0;
-                    document.getElementById('badgeCountDiscrepancies').textContent = (discrepanciesData.length || 0).toLocaleString('ru-RU');
-                    document.getElementById('badgeCountAnomalies').textContent = anomaliesData.length || 0;
-                    document.getElementById('badgeCountRisk').textContent = riskData.length || 0;
-
-                    const emptyCard = document.getElementById('emptyStatePlaceholder');
-                    if (emptyCard) emptyCard.style.display = 'none';
-
-                    switchMainTab(currentTab);
+                    applyDataToUI(json, true);
                 } else {
                     alert('Ошибка: ' + (json.message || 'Не удалось завершить сверку'));
                 }
@@ -1654,6 +1602,84 @@
                 abortController = null;
             }
         });
+
+        function applyDataToUI(json, isLiveRun = false) {
+            if (json.kpi) {
+                document.getElementById('kpiMatched').textContent = (json.kpi.matched || 0).toLocaleString('ru-RU');
+                document.getElementById('subKpiMatched').textContent = '95.3% от всех операций';
+                const bMatched = document.getElementById('badgeKpiMatched');
+                if (bMatched) bMatched.style.display = 'inline-block';
+
+                document.getElementById('kpiDiscrepancies').textContent = (json.kpi.discrepancies || 0).toLocaleString('ru-RU');
+                document.getElementById('subKpiDiscrepancies').textContent = 'Требуют анализа';
+                const bDisc = document.getElementById('badgeKpiDiscrepancies');
+                if (bDisc) bDisc.style.display = 'inline-block';
+
+                document.getElementById('kpiEtmAdj').textContent = (json.kpi.etm_adj ? (json.kpi.etm_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
+                document.getElementById('subKpiEtmAdj').textContent = 'Сбои бота и оплаты';
+                const bEtm = document.getElementById('badgeKpiEtmAdj');
+                if (bEtm) bEtm.style.display = 'inline-block';
+
+                document.getElementById('kpiC1Adj').textContent = (json.kpi.c1_adj ? (json.kpi.c1_adj / 1000000).toFixed(2) + 'M сом' : '0 сом');
+                document.getElementById('subKpiC1Adj').textContent = 'Невыставленные счета';
+                const bC1 = document.getElementById('badgeKpiC1Adj');
+                if (bC1) bC1.style.display = 'inline-block';
+
+                document.getElementById('kpiAnomalies').textContent = (json.kpi.anomalies || 0).toLocaleString('ru-RU');
+                document.getElementById('subKpiAnomalies').textContent = 'Двойные списания / повторы';
+                const bAnom = document.getElementById('badgeKpiAnomalies');
+                if (bAnom) bAnom.style.display = 'inline-block';
+
+                document.getElementById('kpiMlRoc').textContent = (json.kpi.ml_roc_auc ? json.kpi.ml_roc_auc.toFixed(4) : '—');
+                document.getElementById('subKpiMlRoc').textContent = 'Hold-out test (июль 2026)';
+                const bMl = document.getElementById('badgeKpiMlRoc');
+                if (bMl) bMl.style.display = 'inline-block';
+            }
+
+            if (json.summary) summaryData = json.summary;
+            if (json.discrepancies) discrepanciesData = json.discrepancies;
+            if (json.anomalies) anomaliesData = json.anomalies;
+            if (json.risk) riskData = json.risk;
+
+            document.getElementById('badgeCountSummary').textContent = summaryData.length || 0;
+            document.getElementById('badgeCountDiscrepancies').textContent = (discrepanciesData.length || 0).toLocaleString('ru-RU');
+            document.getElementById('badgeCountAnomalies').textContent = anomaliesData.length || 0;
+            document.getElementById('badgeCountRisk').textContent = riskData.length || 0;
+
+            const badge = document.getElementById('pipelineStatusBadge');
+            badge.style.color = 'var(--success-text)';
+            badge.style.backgroundColor = 'var(--success-bg)';
+            document.getElementById('pipelineStatusText').textContent = isLiveRun ? 'Сверка завершена' : 'Данные актуальны';
+            document.getElementById('pipelineProgressPercent').textContent = '100%';
+            document.getElementById('pipelineProgressFill').style.width = '100%';
+
+            if (json.last_updated) {
+                document.getElementById('topbarLastSync').textContent = `Последняя сверка: ${json.last_updated}`;
+                document.getElementById('pipelineDuration').textContent = `Сформировано: ${json.last_updated}`;
+            } else if (json.elapsed_sec) {
+                const timeStr = `${Math.floor(json.elapsed_sec / 60)} мин ${Math.round(json.elapsed_sec % 60)} сек`;
+                document.getElementById('pipelineDuration').textContent = `Обработано за ${timeStr}`;
+            }
+
+            const emptyCard = document.getElementById('emptyStatePlaceholder');
+            if (emptyCard) emptyCard.style.display = 'none';
+
+            switchMainTab(currentTab);
+        }
+
+        async function checkExistingReport() {
+            try {
+                const resp = await fetch('/api/current-status');
+                if (!resp.ok) return;
+                const json = await resp.json();
+                if (json.status === 'ok' && json.available && json.summary && json.summary.length > 0) {
+                    applyDataToUI(json, false);
+                }
+            } catch (err) {
+                console.warn('Could not load current status:', err);
+            }
+        }
+        checkExistingReport();
     </script>
 </body>
 </html>
