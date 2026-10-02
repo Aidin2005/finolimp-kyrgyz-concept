@@ -1,0 +1,1 @@
+# finolimp-kyrgyz-concept
