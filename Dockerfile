@@ -4,7 +4,9 @@ FROM python:3.10-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     MPLBACKEND=Agg \
-    MPLCONFIGDIR=/tmp/matplotlib
+    MPLCONFIGDIR=/tmp/matplotlib \
+    LOKY_MAX_CPU_COUNT=2 \
+    PORT=5050
 
 WORKDIR /app
 
@@ -18,13 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code and default datasets
+# Copy source code and default datasets (output files already included)
 COPY . .
-
-# Run initial pipeline once during build to ensure cached outputs exist
-RUN python main.py
 
 EXPOSE 5050
 
-# Run with gunicorn in production
-CMD ["gunicorn", "--bind", "0.0.0.0:5050", "--workers", "2", "--timeout", "180", "app:app"]
+# Run with gunicorn using dynamic PORT from cloud provider (Render/Railway)
+CMD exec gunicorn --bind 0.0.0.0:${PORT:-5050} --workers 2 --timeout 180 app:app
