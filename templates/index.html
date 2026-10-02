@@ -965,12 +965,12 @@
                             <div class="drop-zone-text">Перетащите файл сюда или <strong>выберите</strong></div>
                             <div class="drop-zone-hint">Поддерживается CSV, размер до 50 МБ</div>
                         </div>
-                        <div class="file-chip" id="chipActs">
+                        <div class="file-chip" id="chipActs" style="display: none;">
                             <div class="file-chip-info">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
                                 <div>
                                     <span class="file-chip-name" id="nameActs">acts.csv</span>
-                                    <span class="file-chip-meta" id="metaActs">3.2 МБ · 15.07.2026 12:20</span>
+                                    <span class="file-chip-meta" id="metaActs">3.2 МБ · Базовый датасет</span>
                                 </div>
                             </div>
                             <span class="file-chip-remove" onclick="removeFile('acts')">✕</span>
@@ -988,12 +988,12 @@
                             <div class="drop-zone-text">Перетащите файл сюда или <strong>выберите</strong></div>
                             <div class="drop-zone-hint">Поддерживается CSV, размер до 50 МБ</div>
                         </div>
-                        <div class="file-chip" id="chipEtm">
+                        <div class="file-chip" id="chipEtm" style="display: none;">
                             <div class="file-chip-info">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
                                 <div>
                                     <span class="file-chip-name" id="nameEtm">etm.csv</span>
-                                    <span class="file-chip-meta" id="metaEtm">2.8 МБ · 15.07.2026 12:20</span>
+                                    <span class="file-chip-meta" id="metaEtm">2.8 МБ · Базовый датасет</span>
                                 </div>
                             </div>
                             <span class="file-chip-remove" onclick="removeFile('etm')">✕</span>
@@ -1011,12 +1011,12 @@
                             <div class="drop-zone-text">Перетащите файл сюда или <strong>выберите</strong></div>
                             <div class="drop-zone-hint">Поддерживается CSV, размер до 50 МБ</div>
                         </div>
-                        <div class="file-chip" id="chipRegistry">
+                        <div class="file-chip" id="chipRegistry" style="display: none;">
                             <div class="file-chip-info">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
                                 <div>
                                     <span class="file-chip-name" id="nameRegistry">registry.csv</span>
-                                    <span class="file-chip-meta" id="metaRegistry">1.1 МБ · 15.07.2026 12:20</span>
+                                    <span class="file-chip-meta" id="metaRegistry">1.1 МБ · Базовый датасет</span>
                                 </div>
                             </div>
                             <span class="file-chip-remove" onclick="removeFile('registry')">✕</span>
@@ -1419,23 +1419,58 @@
             }
         }
 
-        // File chip handlers
-        function setupFileInput(inputId, chipId, nameId, metaId) {
+        // State tracking for the 3 input sources
+        const fileSlots = {
+            acts: { file: null, isDefault: false },
+            etm: { file: null, isDefault: false },
+            registry: { file: null, isDefault: false }
+        };
+
+        function setupFileInput(inputId, chipId, nameId, metaId, slotKey, dropZoneId) {
             const input = document.getElementById(inputId);
+            const dropZone = document.getElementById(dropZoneId);
+
+            function attachFile(file) {
+                if (!file) return;
+                fileSlots[slotKey] = { file: file, isDefault: false };
+                document.getElementById(nameId).textContent = file.name;
+                document.getElementById(metaId).textContent = `${(file.size / 1024 / 1024).toFixed(2)} МБ · Пользовательский файл`;
+                document.getElementById(chipId).style.display = 'flex';
+            }
+
             input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    document.getElementById(nameId).textContent = file.name;
-                    document.getElementById(metaId).textContent = `${(file.size / 1024 / 1024).toFixed(1)} МБ · только что`;
-                    document.getElementById(chipId).style.display = 'flex';
-                }
+                attachFile(e.target.files[0]);
             });
+
+            // Drag and drop handlers
+            if (dropZone) {
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('dragover');
+                });
+                dropZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('dragover');
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        input.files = e.dataTransfer.files;
+                        attachFile(e.dataTransfer.files[0]);
+                    }
+                });
+            }
         }
-        setupFileInput('inputActs', 'chipActs', 'nameActs', 'metaActs');
-        setupFileInput('inputEtm', 'chipEtm', 'nameEtm', 'metaEtm');
-        setupFileInput('inputRegistry', 'chipRegistry', 'nameRegistry', 'metaRegistry');
+        setupFileInput('inputActs', 'chipActs', 'nameActs', 'metaActs', 'acts', 'dropZoneActs');
+        setupFileInput('inputEtm', 'chipEtm', 'nameEtm', 'metaEtm', 'etm', 'dropZoneEtm');
+        setupFileInput('inputRegistry', 'chipRegistry', 'nameRegistry', 'metaRegistry', 'registry', 'dropZoneRegistry');
 
         function removeFile(type) {
+            fileSlots[type] = { file: null, isDefault: false };
             if (type === 'acts') {
                 document.getElementById('inputActs').value = '';
                 document.getElementById('chipActs').style.display = 'none';
@@ -1449,16 +1484,19 @@
         }
 
         function useDefaultData() {
+            fileSlots.acts = { file: null, isDefault: true };
             document.getElementById('nameActs').textContent = 'acts.csv';
-            document.getElementById('metaActs').textContent = '3.2 МБ · 15.07.2026 12:20';
+            document.getElementById('metaActs').textContent = '3.2 МБ · Базовый датасет (янв–июл 2026)';
             document.getElementById('chipActs').style.display = 'flex';
 
+            fileSlots.etm = { file: null, isDefault: true };
             document.getElementById('nameEtm').textContent = 'etm.csv';
-            document.getElementById('metaEtm').textContent = '2.8 МБ · 15.07.2026 12:20';
+            document.getElementById('metaEtm').textContent = '2.8 МБ · Базовый датасет (янв–июл 2026)';
             document.getElementById('chipEtm').style.display = 'flex';
 
+            fileSlots.registry = { file: null, isDefault: true };
             document.getElementById('nameRegistry').textContent = 'registry.csv';
-            document.getElementById('metaRegistry').textContent = '1.1 МБ · 15.07.2026 12:20';
+            document.getElementById('metaRegistry').textContent = '1.1 МБ · Базовый датасет (янв–июл 2026)';
             document.getElementById('chipRegistry').style.display = 'flex';
         }
 
@@ -1484,6 +1522,22 @@
 
         // Run full reconciliation
         document.getElementById('btnRun').addEventListener('click', async () => {
+            // Validation: ensure all 3 file sources are present
+            const missing = [];
+            if (!fileSlots.acts.file && !fileSlots.acts.isDefault) missing.push('1. Акты сверки 1С (acts.csv)');
+            if (!fileSlots.etm.file && !fileSlots.etm.isDefault) missing.push('2. Балансы ETM (etm.csv)');
+            if (!fileSlots.registry.file && !fileSlots.registry.isDefault) missing.push('3. Реестр бронирований (registry.csv)');
+
+            if (missing.length > 0) {
+                alert(
+                    '⚠️ Невозможно запустить сверку: отсутствуют данные!\n\n' +
+                    'Для проведения сверки требуется наличие всех 3 файлов:\n• ' + missing.join('\n• ') + '\n\n' +
+                    'Пожалуйста, прикрепите файлы через зоны загрузки или нажмите кнопку:\n' +
+                    '«Использовать текущие выгрузки (янв–июл 2026)»'
+                );
+                return;
+            }
+
             const btn = document.getElementById('btnRun');
             const origHtml = btn.innerHTML;
             btn.innerHTML = '<span>Выполняется сверка...</span>';
@@ -1499,16 +1553,11 @@
             document.getElementById('pipelineProgressFill').style.width = '10%';
 
             const formData = new FormData();
-            const fActs = document.getElementById('inputActs').files[0];
-            const fEtm = document.getElementById('inputEtm').files[0];
-            const fReg = document.getElementById('inputRegistry').files[0];
+            if (fileSlots.acts.file) formData.append('acts', fileSlots.acts.file);
+            if (fileSlots.etm.file) formData.append('etm', fileSlots.etm.file);
+            if (fileSlots.registry.file) formData.append('registry', fileSlots.registry.file);
 
-            if (fActs) formData.append('acts', fActs);
-            if (fEtm) formData.append('etm', fEtm);
-            if (fReg) formData.append('registry', fReg);
-
-            // If no custom files were chosen, run with default files
-            if (!fActs && !fEtm && !fReg) {
+            if (fileSlots.acts.isDefault && fileSlots.etm.isDefault && fileSlots.registry.isDefault) {
                 formData.append('use_default', 'true');
             }
 

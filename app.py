@@ -118,12 +118,25 @@ def run_reconciliation():
     use_default = request.form.get("use_default") == "true"
     temp_dir = None
 
-    if not use_default and "acts" in request.files and request.files["acts"].filename:
+    acts_f = request.files.get("acts")
+    etm_f = request.files.get("etm")
+    reg_f = request.files.get("registry")
+
+    has_acts = bool(acts_f and acts_f.filename)
+    has_etm = bool(etm_f and etm_f.filename)
+    has_reg = bool(reg_f and reg_f.filename)
+
+    if not use_default and not (has_acts or has_etm or has_reg):
+        return jsonify({
+            "status": "error",
+            "message": "Файлы не загружены. Для запуска сверки прикрепите файлы (acts.csv, etm.csv, registry.csv) или выберите опцию «Использовать текущие выгрузки»."
+        }), 400
+
+    if not use_default:
         temp_dir = Path(tempfile.mkdtemp(prefix="reconcile_upload_"))
-        for key in ["acts", "etm", "registry"]:
-            file = request.files.get(key)
-            if file and file.filename:
-                file.save(temp_dir / f"{key}.csv")
+        for key, f_obj in [("acts", acts_f), ("etm", etm_f), ("registry", reg_f)]:
+            if f_obj and f_obj.filename:
+                f_obj.save(temp_dir / f"{key}.csv")
             else:
                 shutil.copy(DEFAULT_DATA_DIR / f"{key}.csv", temp_dir / f"{key}.csv")
         data_dir = temp_dir
