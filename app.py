@@ -78,19 +78,24 @@ def _load_current_data():
         print(f"Error loading report: {e}")
         return None
 
+import time
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/api/initial-data")
 @app.route("/api/current-status")
 def current_status():
     data = _load_current_data()
     if data:
+        data["status"] = "ok"
         return jsonify(data)
-    return jsonify({"available": False})
+    return jsonify({"status": "empty", "available": False})
 
 @app.route("/api/run-reconciliation", methods=["POST"])
 def run_reconciliation():
+    start_time = time.time()
     use_default = request.form.get("use_default") == "true"
     temp_dir = None
 
@@ -101,7 +106,6 @@ def run_reconciliation():
             if file and file.filename:
                 file.save(temp_dir / f"{key}.csv")
             else:
-                # Fallback to default if one file wasn't provided
                 shutil.copy(DEFAULT_DATA_DIR / f"{key}.csv", temp_dir / f"{key}.csv")
         data_dir = temp_dir
     else:
@@ -117,8 +121,15 @@ def run_reconciliation():
         step5_ml_model.run(etm, registry, matched, discrepancies, DEFAULT_OUTPUT_DIR)
 
         data = _load_current_data()
-        data["kpi"]["matched"] = len(matched)
-        return jsonify(data)
+        if data:
+            data["status"] = "ok"
+            data["elapsed_sec"] = round(time.time() - start_time, 1)
+            data["kpi"]["matched"] = len(matched)
+            return jsonify(data)
+        else:
+            return jsonify({"status": "error", "message": "Отчёт не был сформирован"}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         if temp_dir and temp_dir.exists():
             shutil.rmtree(temp_dir, ignore_errors=True)
