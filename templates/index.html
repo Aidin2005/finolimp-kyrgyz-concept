@@ -1578,7 +1578,14 @@
                     body: formData,
                     signal: abortController.signal
                 });
-                const json = await resp.json();
+                let json;
+                const contentType = resp.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    json = await resp.json();
+                } else {
+                    const text = await resp.text();
+                    throw new Error(`Ошибка сервера (${resp.status}): ${text.substring(0, 150)}`);
+                }
                 
                 if (json.status === 'ok' || json.kpi || json.summary) {
                     applyDataToUI(json, true);
@@ -1589,7 +1596,7 @@
                 if (e.name === 'AbortError') {
                     console.log('Сверка была отменена пользователем.');
                 } else {
-                    alert('Сетевая ошибка: ' + e.message);
+                    alert('Ошибка выполнения сверки: ' + e.message);
                 }
             } finally {
                 if (pollTimer) {

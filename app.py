@@ -5,8 +5,10 @@ Open:
     http://localhost:5050
 """
 from __future__ import annotations
+import json
 import shutil
 import tempfile
+import time
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
@@ -82,8 +84,6 @@ def _load_current_data():
     except Exception as e:
         print(f"Error loading report: {e}")
         return None
-
-import json
 
 PROGRESS_FILE = Path(tempfile.gettempdir()) / "finolimp_progress.json"
 
