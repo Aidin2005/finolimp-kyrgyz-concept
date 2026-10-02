@@ -10,45 +10,45 @@ FinOlimp 2026 · Kyrgyz Concept: Machine Learning Quality Report
    • Отсутствие утечек (No data leakage): все target encoding вычислены строго на Train.
 
 2. МЕТРИКИ КАЧЕСТВА НА ОТЛОЖЕННОЙ ВЫБОРКЕ (ИЮЛЬ 2026):
-   • ROC-AUC (дискриминативная способность):  0.7047
-   • PR-AUC (Average Precision):               0.1802
-   • Мультиклассовая точность (Accuracy):      0.8913
-   • Мультиклассовый Macro F1-score:           0.3226
+   • ROC-AUC (дискриминативная способность):  0.7050
+   • PR-AUC (Average Precision):               0.1754
+   • Мультиклассовая точность (Accuracy):      0.8942
+   • Мультиклассовый Macro F1-score:           0.3498
 
 3. CLASSIFICATION REPORT (Бинарная классификация):
                  precision    recall  f1-score   support
 
-Без ошибок (OK)      0.901     0.941     0.920      3989
-         Ошибка      0.169     0.104     0.129       462
+Без ошибок (OK)      0.902     0.947     0.924      3989
+         Ошибка      0.192     0.108     0.139       462
 
-       accuracy                          0.854      4451
-      macro avg      0.535     0.522     0.524      4451
-   weighted avg      0.825     0.854     0.838      4451
+       accuracy                          0.860      4451
+      macro avg      0.547     0.528     0.531      4451
+   weighted avg      0.828     0.860     0.842      4451
 
 
 4. CONFUSION MATRIX (Тестовая выборка):
-   [TN=3753  FP= 236]  (True OK / False Alarm)
-   [FN= 414  TP=  48]  (Missed Error / Caught Error)
+   [TN=3779  FP= 210]  (True OK / False Alarm)
+   [FN= 412  TP=  50]  (Missed Error / Caught Error)
 
 5. ВАЖНОСТЬ ПРИЗНАКОВ (TOP-10 FEATURE IMPORTANCE):
-    1. abs_amount             :   1174
-    2. agent_err_rate         :   1028
-    3. day                    :    815
-    4. dayofweek              :    420
-    5. log_amount             :    268
-    6. hour                   :    266
-    7. air_err_rate           :    265
-    8. employee               :    256
-    9. emp_err_rate           :    252
-   10. airline                :    192
+    1. agent_err_rate         :    472
+    2. abs_amount             :    402
+    3. day                    :    315
+    4. dayofweek              :    136
+    5. log_amount             :    133
+    6. air_err_rate           :    115
+    7. employee               :    100
+    8. emp_err_rate           :     98
+    9. airline                :     89
+   10. kind                   :     84
 
 6. РАНЖИРОВАНИЕ РИСКОВ ДЛЯ БИЗНЕСА:
    • Топ-5 наиболее рискованных субагентов для приоритетной проверки:
-     - ЧОЛПОН ТУР (P(error)=44.8%, ошибок=76)
-     - Тянь-Шань Тур (P(error)=42.3%, ошибок=41)
-     - Чынар уулу Эмир (P(error)=38.2%, ошибок=33)
+     - ЧОЛПОН ТУР (P(error)=43.7%, ошибок=76)
+     - Тянь-Шань Тур (P(error)=41.9%, ошибок=41)
+     - Чынар уулу Эмир (P(error)=37.3%, ошибок=33)
      - Жибек Эйр (P(error)=35.6%, ошибок=176)
-     - Чолпон Тревел (P(error)=34.4%, ошибок=29)
+     - Чолпон Тревел (P(error)=34.0%, ошибок=29)
 
    • Рейтинг операторов реестра по доле брака:
      - d.mambetova    : 27.93% ошибок (438 из 1568 записей)

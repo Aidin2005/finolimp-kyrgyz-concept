@@ -100,11 +100,12 @@ def run(etm: pd.DataFrame, registry: pd.DataFrame, matched: pd.DataFrame, discre
 
     # 4. Train Binary Model: P(error)
     binary_clf = lgb.LGBMClassifier(
-        n_estimators=180,
-        learning_rate=0.04,
-        max_depth=6,
+        n_estimators=80,
+        learning_rate=0.06,
+        max_depth=5,
         subsample=0.85,
         colsample_bytree=0.85,
+        n_jobs=2,
         random_state=42,
         verbose=-1
     )
@@ -125,9 +126,10 @@ def run(etm: pd.DataFrame, registry: pd.DataFrame, matched: pd.DataFrame, discre
     multi_clf = lgb.LGBMClassifier(
         objective="multiclass",
         num_class=4,
-        n_estimators=150,
-        learning_rate=0.04,
-        max_depth=6,
+        n_estimators=60,
+        learning_rate=0.06,
+        max_depth=5,
+        n_jobs=2,
         random_state=42,
         verbose=-1
     )

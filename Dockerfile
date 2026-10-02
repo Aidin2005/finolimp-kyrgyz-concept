@@ -26,4 +26,4 @@ COPY . .
 EXPOSE 5050
 
 # Run with gunicorn using dynamic PORT from cloud provider (Render/Railway)
-CMD exec gunicorn --bind 0.0.0.0:${PORT:-5050} --workers 2 --timeout 180 app:app
+CMD exec gunicorn --bind 0.0.0.0:${PORT:-5050} --workers 2 --threads 2 --timeout 300 app:app

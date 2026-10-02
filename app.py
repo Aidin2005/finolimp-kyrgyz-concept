@@ -83,22 +83,39 @@ def _load_current_data():
         print(f"Error loading report: {e}")
         return None
 
-import time
+import json
 
-progress_state = {
-    "running": False,
-    "stage": 0,
-    "total_stages": 6,
-    "stage_name": "Готов к запуску",
-    "percent": 0
-}
+PROGRESS_FILE = Path(tempfile.gettempdir()) / "finolimp_progress.json"
 
-def update_progress(stage: int, name: str, percent: int):
-    progress_state["running"] = True
-    progress_state["stage"] = stage
-    progress_state["total_stages"] = 6
-    progress_state["stage_name"] = name
-    progress_state["percent"] = percent
+def _save_progress(data: dict):
+    try:
+        PROGRESS_FILE.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+
+def _load_progress() -> dict:
+    try:
+        if PROGRESS_FILE.exists():
+            return json.loads(PROGRESS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {
+        "running": False,
+        "stage": 0,
+        "total_stages": 6,
+        "stage_name": "Готов к запуску",
+        "percent": 0
+    }
+
+def update_progress(stage: int, name: str, percent: int, running: bool = True):
+    data = {
+        "running": running,
+        "stage": stage,
+        "total_stages": 6,
+        "stage_name": name,
+        "percent": percent
+    }
+    _save_progress(data)
 
 @app.route("/")
 def index():
@@ -106,7 +123,7 @@ def index():
 
 @app.route("/api/progress")
 def get_progress():
-    return jsonify(progress_state)
+    return jsonify(_load_progress())
 
 @app.route("/api/initial-data")
 @app.route("/api/current-status")
@@ -167,8 +184,7 @@ def run_reconciliation():
         update_progress(6, "Обучение ML-модели (LightGBM) и скоринг рисков...", 95)
         step5_ml_model.run(etm, registry, matched, discrepancies, DEFAULT_OUTPUT_DIR)
 
-        update_progress(6, "Сверка завершена", 100)
-        progress_state["running"] = False
+        update_progress(6, "Сверка завершена", 100, running=False)
 
         data = _load_current_data()
         if data:
@@ -179,8 +195,7 @@ def run_reconciliation():
         else:
             return jsonify({"status": "error", "message": "Отчёт не был сформирован"}), 500
     except Exception as e:
-        progress_state["running"] = False
-        progress_state["stage_name"] = "Ошибка при сверке"
+        update_progress(0, f"Ошибка: {str(e)[:100]}", 0, running=False)
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         if temp_dir and temp_dir.exists():

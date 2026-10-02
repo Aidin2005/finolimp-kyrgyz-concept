@@ -1563,7 +1563,7 @@
                     const pResp = await fetch('/api/progress');
                     if (pResp.ok) {
                         const pData = await pResp.json();
-                        if (pData && pData.running) {
+                        if (pData && (pData.running || pData.percent > 0)) {
                             statusText.textContent = `[${pData.stage}/${pData.total_stages}] ${pData.stage_name}`;
                             document.getElementById('pipelineProgressPercent').textContent = `${pData.percent}%`;
                             document.getElementById('pipelineProgressFill').style.width = `${pData.percent}%`;
