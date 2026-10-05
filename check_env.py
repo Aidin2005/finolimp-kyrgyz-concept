@@ -1,21 +1,18 @@
-"""
-check_env.py — Проверка готовности среды перед запуском FinOlimp пайплайна.
+"""check_env.py — Проверка готовности среды перед запуском FinOlimp пайплайна.
 Запустите: python check_env.py
 """
 import sys
 import os
 
-# ── подавляем шум matplotlib заранее ──────────────────────────────────────────
-os.environ.setdefault("MPLBACKEND", "Agg")
-os.environ.setdefault("MPLCONFIGDIR", os.path.join(os.path.dirname(__file__), ".matplotlib_cache"))
-
 REQUIRED = {
-    "pandas":        ">=1.5",
-    "numpy":         ">=1.23",
-    "openpyxl":      ">=3.0",
-    "sklearn":       "scikit-learn>=1.1",
-    "lightgbm":      ">=4.0",
+    "pandas":        ">=2.0",
+    "numpy":         ">=1.24",
+    "scipy":         ">=1.10",
+    "sklearn":       "scikit-learn>=1.3",
+    "openpyxl":      ">=3.1",
+    "joblib":        ">=1.3",
     "flask":         ">=2.2",
+    "gunicorn":      ">=21.2",
 }
 
 REQUIRED_DATA = [
@@ -31,7 +28,7 @@ print("  FinOlimp 2026 · Kyrgyz Concept — Проверка окружения
 print("=" * 60)
 
 # 1. Python version
-print(f"\n[1/3] Python версия: {sys.version}")
+print(f"\n[1/3] Python версия: {sys.version.split()[0]}")
 major, minor = sys.version_info[:2]
 if major < 3 or (major == 3 and minor < 8):
     print("  ❌ ОШИБКА: Требуется Python 3.8+. У вас: {}.{}".format(major, minor))
@@ -54,9 +51,7 @@ for module, install_name in REQUIRED.items():
         ok = False
 
 if missing:
-    print("\n  Установите недостающие пакеты командой:")
-    print("    pip install " + " ".join(m.split(">=")[0].replace("scikit-learn", "scikit-learn") for m in missing))
-    print("  Или сразу всё:")
+    print("\n  Установите необходимые пакеты командой:")
     print("    pip install -r requirements.txt")
 
 # 3. Data files
@@ -76,7 +71,7 @@ for rel_path in REQUIRED_DATA:
 print("\n" + "=" * 60)
 if ok:
     print("✅ Всё готово! Запускайте:")
-    print("   python main.py        — консольный режим")
+    print("   python main.py        — консольный режим (запуск полного пайплайна)")
     print("   python app.py         — веб-интерфейс (открыть http://localhost:5050)")
 else:
     print("❌ Есть проблемы — исправьте их выше, затем повторите проверку.")
