@@ -8,3 +8,5 @@ Final..zip
 .env
 venv/
 .venv/
+KC_reconciliation_v3/
+*.zip

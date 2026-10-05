@@ -5,93 +5,37 @@ Open:
     http://localhost:5050
 """
 from __future__ import annotations
+
+from datetime import datetime
 import json
+from pathlib import Path
 import shutil
 import tempfile
 import time
-from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
 
-from src import (
-    step1_load_clean,
-    step2_matching,
-    step3_reconcile,
-    step4_anomalies,
-    step5_ml_model,
-    step6_report
-)
-from src.config import DEFAULT_DATA_DIR, DEFAULT_OUTPUT_DIR
+from src import reconcile, model, report, adapter, pipeline
+
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_DATA_DIR = BASE_DIR / "data_2_final"
+DEFAULT_OUTPUT_DIR = BASE_DIR / "output"
+DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+DEFAULT_MODELS_DIR = BASE_DIR / "models"
+DEFAULT_MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024  # 64 MB max upload
 
-def _load_current_data():
-    report_path = DEFAULT_OUTPUT_DIR / "reconciliation_report.xlsx"
-    risk_path = DEFAULT_OUTPUT_DIR / "risk_ranking.csv"
-    metrics_path = DEFAULT_OUTPUT_DIR / "model_metrics.txt"
-
-    if not report_path.exists():
-        return None
-
-    try:
-        xl = pd.ExcelFile(report_path, engine="openpyxl")
-        summary_df = pd.read_excel(xl, "Сводка по субагентам")
-        disc_df = pd.read_excel(xl, "Детализация расхождений")
-        anom_df = pd.read_excel(xl, "Аномалии и антифрод")
-        risk_df = pd.read_csv(risk_path) if risk_path.exists() else pd.DataFrame()
-
-        # Extract KPI values
-        etm_adj = float(summary_df["Двигать баланс ETM"].abs().sum())
-        c1_adj = float(summary_df["Корректировка 1С"].abs().sum())
-
-        ml_roc_auc = 0.7047
-        if metrics_path.exists():
-            text = metrics_path.read_text(encoding="utf-8")
-            for line in text.splitlines():
-                if "ROC-AUC" in line:
-                    try:
-                        ml_roc_auc = float(line.split(":")[-1].strip())
-                    except ValueError:
-                        pass
-
-        # Handle NaNs and dates for JSON serialization
-        for df in (summary_df, disc_df, anom_df, risk_df):
-            df.fillna("", inplace=True)
-            for col in df.select_dtypes(include=["datetime", "datetimetz"]).columns:
-                df[col] = df[col].astype(str)
-
-        import datetime
-        mtime = report_path.stat().st_mtime
-        last_updated = datetime.datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M")
-
-        return {
-            "available": True,
-            "last_updated": last_updated,
-            "kpi": {
-                "matched": 39852,
-                "discrepancies": len(disc_df),
-                "etm_adj": etm_adj,
-                "c1_adj": c1_adj,
-                "anomalies": len(anom_df),
-                "ml_roc_auc": ml_roc_auc
-            },
-            "summary": summary_df.to_dict(orient="records"),
-            "discrepancies": disc_df.to_dict(orient="records"),
-            "anomalies": anom_df.to_dict(orient="records"),
-            "risk": risk_df.to_dict(orient="records")
-        }
-    except Exception as e:
-        print(f"Error loading report: {e}")
-        return None
-
 PROGRESS_FILE = Path(tempfile.gettempdir()) / "finolimp_progress.json"
+
 
 def _save_progress(data: dict):
     try:
         PROGRESS_FILE.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
+
 
 def _load_progress() -> dict:
     try:
@@ -107,6 +51,7 @@ def _load_progress() -> dict:
         "percent": 0
     }
 
+
 def update_progress(stage: int, name: str, percent: int, running: bool = True):
     data = {
         "running": running,
@@ -117,13 +62,86 @@ def update_progress(stage: int, name: str, percent: int, running: bool = True):
     }
     _save_progress(data)
 
+
+def _save_artifacts(R, M, emp, summary, out_dir: Path):
+    """Save all analytical CSV files and summary JSON."""
+    keep = [
+        "group_id", "agent", "tickets", "status", "error_source", "confidence",
+        "act_sum", "etm_sum", "reg_sum", "residual", "gap_effect",
+        "etm_date_min", "act_date_min", "lag_days", "amount_pattern",
+        "employees", "explanation", "etm_txn_ids"
+    ]
+    avail_cols = [c for c in keep if c in R.groups.columns]
+    R.groups[avail_cols].to_csv(out_dir / "ticket_groups.csv", index=False)
+    R.payments.to_csv(out_dir / "payment_exceptions.csv", index=False)
+    R.actions.to_csv(out_dir / "agent_actions.csv", index=False)
+    R.bridge.to_csv(out_dir / "bridge_agent.csv", index=False)
+    R.monthly.to_csv(out_dir / "bridge_monthly.csv", index=False)
+    R.act_table.to_csv(out_dir / "onec_acts_integrity.csv", index=False)
+    R.versions.to_csv(out_dir / "onec_draft_vs_reissued.csv", index=False)
+    R.missing.to_csv(out_dir / "onec_missing_months.csv", index=False)
+    R.mapping.to_csv(out_dir / "party_mapping.csv", index=False)
+    emp.to_csv(out_dir / "employee_risk.csv", index=False)
+
+    if M.get("metrics") is not None:
+        M["metrics"].to_csv(out_dir / "model_metrics.csv", index=False)
+    if M.get("per_class") is not None:
+        M["per_class"].to_csv(out_dir / "model_per_class.csv", index=False)
+    if M.get("importance") is not None:
+        M["importance"].to_csv(out_dir / "model_importance.csv", index=False)
+
+    sc = M.get("scored_last_month")
+    if sc is not None and not sc.empty:
+        sc.groupby("agent").agg(
+            operations=("txn_id", "size"),
+            expected_error_ops=("p_error", "sum"),
+            actual_flagged_ops=("is_err", "sum")
+        ).sort_values("expected_error_ops", ascending=False).reset_index().to_csv(
+            out_dir / "agent_risk_last_month.csv", index=False
+        )
+
+    js = {
+        "checks": R.checks,
+        "status_counts": R.groups["status"].value_counts().to_dict(),
+        "payment_counts": R.payments["status"].value_counts().to_dict(),
+        "model": M["metrics"].to_dict(orient="records") if M.get("metrics") is not None else [],
+        "headline": [(k, v if not isinstance(v, (int, float, str)) else v) for k, v in summary["headline"]]
+    }
+    (out_dir / "summary.json").write_text(json.dumps(js, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+
+
+def _load_current_data():
+    ui_cache = DEFAULT_OUTPUT_DIR / "ui_data.json"
+    if ui_cache.exists():
+        try:
+            return json.loads(ui_cache.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"Error loading ui_data.json: {e}")
+
+    # Fallback: check if we can build from existing CSV artifacts
+    actions_p = DEFAULT_OUTPUT_DIR / "agent_actions.csv"
+    if actions_p.exists():
+        try:
+            R = reconcile.run_reconciliation(DEFAULT_DATA_DIR)
+            M = model.run_model(R)
+            emp = model.employee_risk(R)
+            ui_data = adapter.to_ui_json(R, M, emp)
+            ui_cache.write_text(json.dumps(ui_data, ensure_ascii=False), encoding="utf-8")
+            return ui_data
+        except Exception as e:
+            print(f"Error building from data: {e}")
+    return None
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/api/progress")
 def get_progress():
     return jsonify(_load_progress())
+
 
 @app.route("/api/initial-data")
 @app.route("/api/current-status")
@@ -133,6 +151,7 @@ def current_status():
         data["status"] = "ok"
         return jsonify(data)
     return jsonify({"status": "empty", "available": False})
+
 
 @app.route("/api/run-reconciliation", methods=["POST"])
 def run_reconciliation():
@@ -166,34 +185,31 @@ def run_reconciliation():
         data_dir = DEFAULT_DATA_DIR
 
     try:
-        update_progress(1, "Загрузка и очистка данных (1С, ETM, Реестр)...", 15)
-        acts, etm, registry = step1_load_clean.run(data_dir)
+        update_progress(1, "Сверка ETM ↔ 1С ↔ реестр (Union-Find группы заказов)...", 15)
+        R = reconcile.run_reconciliation(data_dir)
 
-        update_progress(2, "Побилетное сопоставление и клиринг войдов...", 35)
-        matched, discrepancies = step2_matching.run(acts, etm, registry)
+        update_progress(3, "Построение баланс-моста и сопоставление платежей...", 45)
+        # Bridge and payment matching are fully completed in Result
 
-        update_progress(3, "Сведение баланса по 100 субагентам...", 55)
-        reconciliation, discrepancies = step3_reconcile.run(acts, etm, matched, discrepancies)
+        update_progress(4, "Обучение ML-модели и оценка рисков сотрудников...", 65)
+        M = model.run_model(R)
+        emp = model.employee_risk(R)
 
-        update_progress(4, "Поиск финансовых аномалий и антифрод...", 70)
-        anomalies = step4_anomalies.run(etm, registry, matched)
+        update_progress(5, "Генерация 15-страничного отчёта Excel и формул моста...", 85)
+        summary = pipeline.build_summary(R, M, emp)
+        report_path = DEFAULT_OUTPUT_DIR / "reconciliation_report.xlsx"
+        report.build_workbook(R, M, emp, summary, report_path)
+        shutil.copy(report_path, DEFAULT_OUTPUT_DIR / "KC_reconciliation_v3_report.xlsx")
 
-        update_progress(5, "Генерация финансового отчета в Excel...", 85)
-        step6_report.run(reconciliation, discrepancies, anomalies, DEFAULT_OUTPUT_DIR)
-
-        update_progress(6, "Обучение ML-модели (LightGBM) и скоринг рисков...", 95)
-        step5_ml_model.run(etm, registry, matched, discrepancies, DEFAULT_OUTPUT_DIR)
+        _save_artifacts(R, M, emp, summary, DEFAULT_OUTPUT_DIR)
 
         update_progress(6, "Сверка завершена", 100, running=False)
 
-        data = _load_current_data()
-        if data:
-            data["status"] = "ok"
-            data["elapsed_sec"] = round(time.time() - start_time, 1)
-            data["kpi"]["matched"] = len(matched)
-            return jsonify(data)
-        else:
-            return jsonify({"status": "error", "message": "Отчёт не был сформирован"}), 500
+        elapsed = time.time() - start_time
+        ui_data = adapter.to_ui_json(R, M, emp, elapsed_sec=elapsed)
+        (DEFAULT_OUTPUT_DIR / "ui_data.json").write_text(json.dumps(ui_data, ensure_ascii=False), encoding="utf-8")
+
+        return jsonify(ui_data)
     except Exception as e:
         update_progress(0, f"Ошибка: {str(e)[:100]}", 0, running=False)
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -201,9 +217,13 @@ def run_reconciliation():
         if temp_dir and temp_dir.exists():
             shutil.rmtree(temp_dir, ignore_errors=True)
 
+
 @app.route("/download/report")
 def download_report():
     report_path = DEFAULT_OUTPUT_DIR / "reconciliation_report.xlsx"
+    if not report_path.exists():
+        report_path = DEFAULT_OUTPUT_DIR / "KC_reconciliation_v3_report.xlsx"
+
     if report_path.exists():
         return send_file(
             report_path,
@@ -213,11 +233,12 @@ def download_report():
         )
     return "Отчёт ещё не сформирован", 404
 
+
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5050))
     print("=" * 80)
-    print(f"  🚀 Kyrgyz Concept Subagent Reconciliation UI запущен!")
+    print("  🚀 Kyrgyz Concept Subagent Reconciliation UI запущен!")
     print(f"  🌐 Откройте в браузере: http://localhost:{port}")
     print("=" * 80)
     app.run(host="0.0.0.0", port=port, debug=False)
