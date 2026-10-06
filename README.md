@@ -13,7 +13,7 @@
 ```bash
 python3 app.py
 ```
-И открыть в любом браузере: **[http://localhost:5050](http://localhost:5050)**
+И открыть в любом браузере: **[https://finolimp-kyrgyz-concept.onrender.com]([http://localhost:5050](https://finolimp-kyrgyz-concept.onrender.com))**
 
 ### Возможности веб-интерфейса:
 1. **Drag-and-Drop загрузка файлов:** просто перетащите три файла (`acts.csv`, `etm.csv`, `registry.csv`) в окно браузера, либо нажмите кнопку *«Использовать текущие выгрузки (янв–июл 2026)»*.
