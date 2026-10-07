@@ -40,18 +40,18 @@
       "n_train": 20067,
       "n_test": 4451,
       "test_error_rate": 0.06515389800044934,
-      "accuracy": 0.9188946304201303,
+      "accuracy": 0.9209166479442822,
       "accuracy_majority_baseline": 0.9348461019995506,
-      "macro_f1": 0.2295022958418918,
+      "macro_f1": 0.22984805410473488,
       "macro_f1_majority_baseline": 0.19326521133302368,
-      "balanced_accuracy": 0.22049423360348386,
-      "any_error_pr_auc": 0.10264268349854745,
+      "balanced_accuracy": 0.22154939319625228,
+      "any_error_pr_auc": 0.11397187819016386,
       "any_error_pr_auc_baseline_prior_rate": 0.0722320171251107,
       "any_error_pr_auc_random": 0.06515389800044934,
-      "any_error_roc_auc": 0.5587789738872453,
-      "precision_at_top5pct": 0.11261261261261261,
-      "lift_at_top5pct": 1.7284094439266853,
-      "recall_at_top5pct": 0.08620689655172414,
+      "any_error_roc_auc": 0.593585759391393,
+      "precision_at_top5pct": 0.13513513513513514,
+      "lift_at_top5pct": 2.0740913327120225,
+      "recall_at_top5pct": 0.10344827586206896,
       "fold": "main (last month)"
     },
     {
@@ -60,25 +60,25 @@
       "n_train": 16065,
       "n_test": 4002,
       "test_error_rate": 0.07146426786606697,
-      "accuracy": 0.9160419790104948,
+      "accuracy": 0.9227886056971514,
       "accuracy_majority_baseline": 0.928535732133933,
-      "macro_f1": 0.236734172858056,
+      "macro_f1": 0.24031219125738496,
       "macro_f1_majority_baseline": 0.19258875356309926,
-      "balanced_accuracy": 0.22586283806633292,
-      "any_error_pr_auc": 0.12238103760180227,
+      "balanced_accuracy": 0.22678102046998355,
+      "any_error_pr_auc": 0.13246523882861855,
       "any_error_pr_auc_baseline_prior_rate": 0.07529164107778205,
       "any_error_pr_auc_random": 0.07146426786606697,
-      "any_error_roc_auc": 0.5828528306999782,
-      "precision_at_top5pct": 0.13,
-      "lift_at_top5pct": 1.819090909090909,
-      "recall_at_top5pct": 0.09090909090909091,
+      "any_error_roc_auc": 0.6109020151000776,
+      "precision_at_top5pct": 0.155,
+      "lift_at_top5pct": 2.1689160839160837,
+      "recall_at_top5pct": 0.10839160839160839,
       "fold": "check (previous month)"
     }
   ],
   "headline": [
     [
       "Сумма модулей: сдвиг баланса ETM по субагентам, KGS",
-      55163942.66
+      55167037.00999999
     ],
     [
       "Сумма модулей: правки в 1С по субагентам, KGS",
@@ -86,7 +86,7 @@
     ],
     [
       "Сумма модулей: «сначала выяснить» по субагентам, KGS",
-      38343105.89000001
+      38342523.68
     ],
     [
       "Операций ETM / строк 1С (последние версии актов) / строк реестра",
@@ -114,7 +114,7 @@
     ],
     [
       "…подтверждено реестром как ошибка бота (A)",
-      200
+      271
     ],
     [
       "…похоже на опечатку цифр в 1С (гипотеза, B)",
@@ -122,7 +122,7 @@
     ],
     [
       "…источник не установить без бухгалтера (C)",
-      334
+      263
     ],
     [
       "Двойных списаний бота",
