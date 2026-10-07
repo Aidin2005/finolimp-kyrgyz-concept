@@ -317,20 +317,35 @@ def classify_groups(groups: pd.DataFrame, missing_by_agent) -> pd.DataFrame:
                     status, source, grade, side = "DOUBLE_DEBIT", "BOT", "A", "etm"
                     why = (f"В ETM {int(g.dup_extra_rows)} лишн. списание(й) одного билета на "
                            f"{-g.dup_extra_amount:,.2f}; без дубля сумма совпадает с 1С")
+                elif abs(r) < 100:
+                    source, grade, side = "REVIEW", "B", "clarify"
+                    why = f"Расхождение в {abs(r):.2f} KGS (до 100 KGS) — вероятно, сервисный сбор или округление курсов"
                 elif reg_ok:
-                    a_etm = _reg_agrees(g.reg_sum, g.reg_fx, -g.etm_sum)
-                    a_1c = _reg_agrees(g.reg_sum, g.reg_fx, g.act_sum)
-                    if a_etm and not a_1c:
-                        source, grade, side = "1C", "A", "onec"
-                        why = (f"Реестр ({g.reg_sum:,.2f}) совпадает с ETM ({-g.etm_sum:,.2f}), "
-                               f"а в 1С {g.act_sum:,.2f}: неверная сумма в 1С")
-                    elif a_1c and not a_etm:
+                    diff_1c = abs(g.reg_sum - g.act_sum)
+                    diff_etm = abs(g.reg_sum - (-g.etm_sum))
+                    
+                    if diff_1c < 5 and diff_etm >= 5:
                         source, grade, side = ("BOT", "A", "etm") if g.etm_bot else ("REVIEW", "A", "clarify")
-                        why = (f"Реестр ({g.reg_sum:,.2f}) совпадает с 1С ({g.act_sum:,.2f}), "
+                        why = (f"Реестр ({g.reg_sum:,.2f}) в точности совпадает с 1С ({g.act_sum:,.2f}), "
                                f"а в ETM {-g.etm_sum:,.2f}: бот перенёс неверную сумму")
+                    elif diff_etm < 5 and diff_1c >= 5:
+                        source, grade, side = "1C", "A", "onec"
+                        why = (f"Реестр ({g.reg_sum:,.2f}) в точности совпадает с ETM ({-g.etm_sum:,.2f}), "
+                               f"а в 1С {g.act_sum:,.2f}: неверная сумма в 1С")
                     else:
-                        source, grade, side = "REVIEW", "C", "clarify"
-                        why = "Реестр не подтверждает ни 1С, ни ETM (либо состав группы неоднозначен) — нужна проверка"
+                        a_etm = _reg_agrees(g.reg_sum, g.reg_fx, -g.etm_sum)
+                        a_1c = _reg_agrees(g.reg_sum, g.reg_fx, g.act_sum)
+                        if a_etm and not a_1c:
+                            source, grade, side = "1C", "A", "onec"
+                            why = (f"Реестр ({g.reg_sum:,.2f}) совпадает с ETM ({-g.etm_sum:,.2f}), "
+                                   f"а в 1С {g.act_sum:,.2f}: неверная сумма в 1С")
+                        elif a_1c and not a_etm:
+                            source, grade, side = ("BOT", "A", "etm") if g.etm_bot else ("REVIEW", "A", "clarify")
+                            why = (f"Реестр ({g.reg_sum:,.2f}) совпадает с 1С ({g.act_sum:,.2f}), "
+                                   f"а в ETM {-g.etm_sum:,.2f}: бот перенёс неверную сумму")
+                        else:
+                            source, grade, side = "REVIEW", "C", "clarify"
+                            why = "Реестр не подтверждает ни 1С, ни ETM (либо состав группы неоднозначен) — нужна проверка"
                 else:
                     pat = digit_pattern(g.act_sum, g.etm_sum)
                     if pat and not g.etm_bot:
