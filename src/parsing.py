@@ -107,7 +107,7 @@ def registry_amount_table(reg: pd.DataFrame) -> pd.DataFrame:
     rate_cols = {"USD": "rate_usd", "EUR": "rate_eur", "RUB": "rate_rub", "KZT": "rate_kzt"}
     amts = []
     for r in reg.itertuples(index=False):
-        rates = {c: getattr(r, col) for c, col in rate_cols.items()}
+        rates = {c: getattr(r, col, np.nan) for c, col in rate_cols.items()}
         amts.append(parse_registry_amount(r.pay_cell, rates))
     amt = pd.Series(amts, index=reg.index, dtype=float)
     cell = reg["pay_cell"].fillna("").astype(str)
