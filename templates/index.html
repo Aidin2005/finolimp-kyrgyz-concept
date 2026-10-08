@@ -879,7 +879,7 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a class="menu-link" href="/download/report">
+                <a class="menu-link" onclick="switchMainTab('reports')">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     <span>Отчёты</span>
                 </a>
@@ -1249,6 +1249,27 @@
                     </table>
                 </div>
 
+                
+                <!-- REPORTS VIEW -->
+                <div class="table-responsive" id="viewReports" style="display: none; padding: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-size: 16px; color: var(--text-main);">Сгенерированные отчёты</h3>
+                        <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 13px;">Скачивайте или удаляйте старые выгрузки (только .xlsx и .csv)</p>
+                    </div>
+                    <table class="data-table" id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">ИМЯ ФАЙЛА</th>
+                                <th style="text-align: left;">ДАТА СОЗДАНИЯ</th>
+                                <th style="text-align: left;">РАЗМЕР</th>
+                                <th style="text-align: right;">ДЕЙСТВИЯ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
                 <!-- View 4: ML-скоринг рисков -->
                 <div class="table-responsive" id="viewRisk" style="display: none;">
                     <table class="data-table" id="tableRisk">
@@ -1286,6 +1307,42 @@
         }
 
         // Switch main tab
+        
+        async function loadReportsList() {
+            try {
+                const resp = await fetch('/api/reports');
+                const files = await resp.json();
+                const tbody = document.querySelector('#reportsTable tbody');
+                tbody.innerHTML = '';
+                if (files.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Нет доступных отчётов</td></tr>';
+                    return;
+                }
+                files.forEach(f => {
+                    const sizeKb = (f.size / 1024).toFixed(1) + ' KB';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: 500;">${f.name}</td>
+                        <td>${f.created_at}</td>
+                        <td>${sizeKb}</td>
+                        <td style="text-align: right;">
+                            <a href="/download/file/${f.name}" class="btn btn-outline" style="padding:4px 8px; font-size:12px; margin-right:8px; text-decoration:none;">Скачать</a>
+                            <button onclick="deleteReport('${f.name}')" class="btn" style="background:#fee2e2; color:#991b1b; padding:4px 8px; font-size:12px; border:none; border-radius:4px; cursor:pointer;">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        async function deleteReport(filename) {
+            if (!confirm('Точно удалить ' + filename + '?')) return;
+            await fetch('/api/delete/' + filename, {method: 'DELETE'});
+            loadReportsList();
+        }
+
         function switchMainTab(tab) {
             currentTab = tab;
             
@@ -1328,6 +1385,18 @@
             document.getElementById('viewDiscrepancies').style.display = tab === 'discrepancies' ? 'block' : 'none';
             document.getElementById('viewAnomalies').style.display = tab === 'anomalies' ? 'block' : 'none';
             document.getElementById('viewRisk').style.display = tab === 'risk' ? 'block' : 'none';
+            
+            
+            const tControls = document.querySelector('.table-controls-bar');
+            if (tControls) tControls.style.display = tab === 'reports' ? 'none' : 'flex';
+
+            const kpiSec = document.querySelector('.kpi-section');
+            if (kpiSec) kpiSec.style.display = tab === 'reports' ? 'none' : 'block';
+
+            const vReports = document.getElementById('viewReports');
+            if (vReports) vReports.style.display = tab === 'reports' ? 'block' : 'none';
+            if (tab === 'reports') loadReportsList();
+
 
             // Re-render
             renderCurrentTable();

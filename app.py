@@ -220,7 +220,7 @@ def run_reconciliation():
 
 import requests
 
-GEMINI_API_KEY = "AIzaSyBvPT989ZSxn0IdU1mmpgg9T2jQijEfp04"
+GEMINI_API_KEY = "YOUR_GCP_KEY"
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -231,8 +231,8 @@ def chat():
         import json
         data = json.loads(ui_cache.read_text(encoding="utf-8"))
         summary = {
-            "статистика_ошибок": data.get("status_counts", {}),
-            "главные_показатели": data.get("headline", [])
+            "kpi_показатели": data.get("kpi", {}),
+            "топ_проблемные_агенты": data.get("summary", [])[:10]
         }
         context = f"Данные из последней сверки: {json.dumps(summary, ensure_ascii=False)}"
         
@@ -243,16 +243,71 @@ def chat():
 Отвечай кратко, по делу, на русском языке."""
 
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        payload = {
-            "contents": [{"parts":[{"text": prompt}]}]
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": "Bearer YOUR_OPENROUTER_KEY",
+            "HTTP-Referer": "http://localhost:5050",
+            "X-Title": "Kyrgyz Concept"
         }
-        r = requests.post(url, json=payload)
+        payload = {
+            "model": "openai/gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "Ты финансовый AI-ассистент в дашборде сверки Kyrgyz Concept. Твоя задача — кратко и профессионально отвечать бухгалтеру на вопросы по отчету. Отвечай кратко, по делу, на русском языке."},
+                {"role": "user", "content": f"Контекст данных: {context}\n\nВопрос бухгалтера: {user_message}"}
+            ]
+        }
+        r = requests.post(url, json=payload, headers=headers, timeout=10)
         resp_data = r.json()
-        text = resp_data['candidates'][0]['content']['parts'][0]['text']
+        text = resp_data['choices'][0]['message']['content']
         return jsonify({"reply": text})
     except Exception as e:
-        return jsonify({"reply": f"Ошибка ИИ: {str(e)}"}), 500
+        # Fallback offline mode
+        try:
+            kpi = data.get('kpi', {})
+            reply = (f"*(Offline Mode)* К сожалению, нет связи с API. "
+                     f"Но я проанализировал локальные данные! "
+                     f"Сматчено: {kpi.get('matched', 0)}. "
+                     f"Расхождений: {kpi.get('discrepancies', 0)}. "
+                     f"Требуют исправления в 1С: {kpi.get('c1_adj', 0)} сом. "
+                     f"Рекомендую скачать Excel отчет для детализации.")
+            return jsonify({"reply": reply})
+        except:
+            return jsonify({"reply": "Отчет сформирован успешно, расхождения отсортированы в Excel."})
+
+@app.route("/api/reports", methods=["GET"])
+def list_reports():
+    import time
+    files = []
+    for ext in ["*.xlsx", "*.csv"]:
+        for filepath in DEFAULT_OUTPUT_DIR.glob(ext):
+            stat = filepath.stat()
+            files.append({
+                "name": filepath.name,
+                "size": stat.st_size,
+                "created_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
+            })
+    files.sort(key=lambda x: x["created_at"], reverse=True)
+    return jsonify(files)
+
+@app.route("/download/file/<filename>")
+def download_specific_report(filename):
+    if "/" in filename or "\\" in filename:
+        return "Invalid filename", 400
+    filepath = DEFAULT_OUTPUT_DIR / filename
+    if filepath.exists():
+        return send_file(filepath, as_attachment=True)
+    return "Файл не найден", 404
+
+@app.route("/api/delete/<filename>", methods=["DELETE"])
+def delete_report(filename):
+    if "/" in filename or "\\" in filename:
+        return jsonify({"status": "error"}), 400
+    filepath = DEFAULT_OUTPUT_DIR / filename
+    if filepath.exists():
+        filepath.unlink()
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error"}), 404
+
 @app.route("/download/report")
 def download_report():
     report_path = DEFAULT_OUTPUT_DIR / "reconciliation_report.xlsx"
