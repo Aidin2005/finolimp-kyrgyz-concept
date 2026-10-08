@@ -519,7 +519,7 @@
 
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 14px;
         }
 
@@ -943,8 +943,19 @@
         <!-- Page Content -->
         <main class="page-content">
 
+            
+            <section id="uploadSuccessCompact" class="upload-section" style="display: none; padding: 12px 24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; gap: 20px; align-items:center;">
+                        <span style="font-weight:600; color:var(--success-color);">✓ Данные успешно загружены и сверены</span>
+                        <span style="color:var(--text-muted); font-size:13px;">Использованы: acts.csv, etm.csv, registry.csv</span>
+                    </div>
+                    <button class="btn btn-outline" onclick="document.getElementById('uploadSuccessCompact').style.display='none'; document.getElementById('uploadSectionFull').style.display='block';">Новая сверка</button>
+                </div>
+            </section>
+            
             <!-- ── SECTION 1: ЗАГРУЗКА ВЫГРУЗОК ДЛЯ СВЕРКИ ──────────────────── -->
-            <section class="upload-section">
+            <section id="uploadSectionFull" class="upload-section">
                 <div class="section-header">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                     <div class="section-header-text">
@@ -1068,7 +1079,7 @@
                 <div class="kpi-grid">
                     <!-- KPI 1 -->
                     <div class="kpi-card">
-                        <span class="kpi-title">СМАТЧЕНО ОПЕРАЦИЙ</span>
+                        <span class="kpi-title">СОПОСТАВЛЕНО ОПЕРАЦИЙ</span>
                         <div class="kpi-value-row">
                             <span class="kpi-value" id="kpiMatched">—</span>
                             <span class="kpi-badge badge-positive" id="badgeKpiMatched" style="display: none;">▲ +2.8%</span>
@@ -1078,7 +1089,7 @@
 
                     <!-- KPI 2 -->
                     <div class="kpi-card">
-                        <span class="kpi-title">НАЙДЕНО РАСХОЖДЕНИЙ</span>
+                        <span class="kpi-title">РАСХОЖДЕНИЯ (ТРЕБУЮТ ПРОВЕРКИ)</span>
                         <div class="kpi-value-row">
                             <span class="kpi-value" id="kpiDiscrepancies">—</span>
                             <span class="kpi-badge badge-negative" id="badgeKpiDiscrepancies" style="display: none;">▲ +12.1%</span>
@@ -1088,7 +1099,7 @@
 
                     <!-- KPI 3 -->
                     <div class="kpi-card">
-                        <span class="kpi-title">КОРРЕКТИРОВКА ETM</span>
+                        <span class="kpi-title">РАСХОЖДЕНИЯ ETM</span>
                         <div class="kpi-value-row">
                             <span class="kpi-value" id="kpiEtmAdj">—</span>
                             <span class="kpi-badge badge-positive" id="badgeKpiEtmAdj" style="display: none;">▼ -8.4%</span>
@@ -1098,7 +1109,7 @@
 
                     <!-- KPI 4 -->
                     <div class="kpi-card">
-                        <span class="kpi-title">ИСПРАВИТЬ В 1С</span>
+                        <span class="kpi-title">СУММА РАСХОЖДЕНИЙ В 1С</span>
                         <div class="kpi-value-row">
                             <span class="kpi-value" id="kpiC1Adj">—</span>
                             <span class="kpi-badge badge-positive" id="badgeKpiC1Adj" style="display: none;">▼ -6.1%</span>
@@ -1118,7 +1129,7 @@
 
                     <!-- KPI 6 -->
                     <div class="kpi-card">
-                        <span class="kpi-title">ТОЧНОСТЬ ML (ROC-AUC)</span>
+                        <span class="kpi-title">КАЧЕСТВО ML-МОДЕЛИ</span>
                         <div class="kpi-value-row">
                             <span class="kpi-value" id="kpiMlRoc">—</span>
                             <span class="kpi-badge badge-positive" id="badgeKpiMlRoc" style="display: none;">▲ +0.03</span>
@@ -1304,6 +1315,14 @@
 
             const emptyCard = document.getElementById('emptyStatePlaceholder');
             if (emptyCard) emptyCard.style.display = 'none';
+            
+            // Hide full upload, show compact
+            const uFull = document.getElementById('uploadSectionFull');
+            const uComp = document.getElementById('uploadSuccessCompact');
+            if(uFull && uComp) {
+                uFull.style.display = 'none';
+                uComp.style.display = 'block';
+            }
 
             // View containers
             document.getElementById('viewSummary').style.display = tab === 'summary' ? 'block' : 'none';
@@ -1670,6 +1689,14 @@
 
             const emptyCard = document.getElementById('emptyStatePlaceholder');
             if (emptyCard) emptyCard.style.display = 'none';
+            
+            // Hide full upload, show compact
+            const uFull = document.getElementById('uploadSectionFull');
+            const uComp = document.getElementById('uploadSuccessCompact');
+            if(uFull && uComp) {
+                uFull.style.display = 'none';
+                uComp.style.display = 'block';
+            }
 
             switchMainTab(currentTab);
         }
