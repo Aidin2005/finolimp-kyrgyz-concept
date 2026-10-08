@@ -218,6 +218,41 @@ def run_reconciliation():
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 
+import requests
+
+GEMINI_API_KEY = "AIzaSyBvPT989ZSxn0IdU1mmpgg9T2jQijEfp04"
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    user_message = request.json.get("message", "")
+    ui_cache = DEFAULT_OUTPUT_DIR / "ui_data.json"
+    context = ""
+    if ui_cache.exists():
+        import json
+        data = json.loads(ui_cache.read_text(encoding="utf-8"))
+        summary = {
+            "статистика_ошибок": data.get("status_counts", {}),
+            "главные_показатели": data.get("headline", [])
+        }
+        context = f"Данные из последней сверки: {json.dumps(summary, ensure_ascii=False)}"
+        
+    prompt = f"""Ты финансовый AI-ассистент в дашборде сверки Kyrgyz Concept.
+Твоя задача — кратко и профессионально отвечать бухгалтеру на вопросы по отчету.
+Контекст данных: {context}
+Вопрос бухгалтера: {user_message}
+Отвечай кратко, по делу, на русском языке."""
+
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        payload = {
+            "contents": [{"parts":[{"text": prompt}]}]
+        }
+        r = requests.post(url, json=payload)
+        resp_data = r.json()
+        text = resp_data['candidates'][0]['content']['parts'][0]['text']
+        return jsonify({"reply": text})
+    except Exception as e:
+        return jsonify({"reply": f"Ошибка ИИ: {str(e)}"}), 500
 @app.route("/download/report")
 def download_report():
     report_path = DEFAULT_OUTPUT_DIR / "reconciliation_report.xlsx"

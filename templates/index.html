@@ -1688,5 +1688,77 @@
         }
         checkExistingReport();
     </script>
+<!-- Chatbot UI -->
+<div id="aiChatBtn" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; background:#1d4ed8; color:white; width:60px; height:60px; border-radius:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1); z-index:9999;">
+    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+</div>
+<div id="aiChatWindow" style="display:none; position:fixed; bottom:90px; right:20px; width:350px; height:450px; background:white; border-radius:12px; box-shadow:0 10px 15px rgba(0,0,0,0.1); z-index:9999; display:none; flex-direction:column; border:1px solid #e5e7eb; overflow:hidden;">
+    <div style="background:#1d4ed8; color:white; padding:15px; font-weight:600; display:flex; justify-content:space-between; align-items:center;">
+        <span>AI-Ассистент Бухгалтера</span>
+        <button onclick="toggleChat()" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">&times;</button>
+    </div>
+    <div id="aiChatMessages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:#f9fafb; font-size:14px;">
+        <div style="background:#e5e7eb; padding:10px; border-radius:8px; align-self:flex-start; max-width:80%;">
+            Привет! Я проанализировал результаты последней сверки. Чем могу помочь?
+        </div>
+    </div>
+    <div style="padding:10px; background:white; border-top:1px solid #e5e7eb; display:flex; gap:5px;">
+        <input type="text" id="aiChatInput" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Спросите меня о расхождениях..." style="flex:1; padding:8px 12px; border:1px solid #d1d5db; border-radius:20px; outline:none;">
+        <button onclick="sendChatMessage()" style="background:#1d4ed8; color:white; border:none; border-radius:20px; padding:8px 15px; cursor:pointer; font-weight:500;">➔</button>
+    </div>
+</div>
+
+<script>
+    function toggleChat() {
+        const win = document.getElementById('aiChatWindow');
+        win.style.display = win.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    async function sendChatMessage() {
+        const input = document.getElementById('aiChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        input.value = '';
+        const msgContainer = document.getElementById('aiChatMessages');
+        
+        // User message
+        const uDiv = document.createElement('div');
+        uDiv.style.cssText = 'background:#1d4ed8; color:white; padding:10px; border-radius:8px; align-self:flex-end; max-width:80%;';
+        uDiv.textContent = text;
+        msgContainer.appendChild(uDiv);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+        
+        // Loading
+        const lDiv = document.createElement('div');
+        lDiv.style.cssText = 'background:#e5e7eb; padding:10px; border-radius:8px; align-self:flex-start; font-style:italic;';
+        lDiv.textContent = 'Анализирую данные...';
+        msgContainer.appendChild(lDiv);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+        
+        try {
+            const resp = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: text})
+            });
+            const data = await resp.json();
+            
+            msgContainer.removeChild(lDiv);
+            
+            const bDiv = document.createElement('div');
+            bDiv.style.cssText = 'background:#e5e7eb; padding:10px; border-radius:8px; align-self:flex-start; max-width:80%; line-height:1.4;';
+            bDiv.innerHTML = data.reply.replace(/\n/g, '<br>');
+            msgContainer.appendChild(bDiv);
+        } catch (e) {
+            msgContainer.removeChild(lDiv);
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'background:#fee2e2; color:#991b1b; padding:10px; border-radius:8px; align-self:flex-start; max-width:80%;';
+            errDiv.textContent = 'Ошибка связи с ИИ.';
+            msgContainer.appendChild(errDiv);
+        }
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+</script>
 </body>
 </html>
