@@ -220,7 +220,7 @@ def run_reconciliation():
 
 import requests
 
-GEMINI_API_KEY = "YOUR_GCP_KEY"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -245,7 +245,7 @@ def chat():
     try:
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
-            "Authorization": "Bearer YOUR_OPENROUTER_KEY",
+            "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY', '')}",
             "HTTP-Referer": "http://localhost:5050",
             "X-Title": "Kyrgyz Concept"
         }
